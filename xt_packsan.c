@@ -10,8 +10,31 @@
 #include <linux/netfilter/x_tables.h>
 #include <net/dsfield.h>
 #include <linux/skbuff.h>
+#include <linux/gfp.h>
+/* This Function is used for comparing two strings passed by parameter
 
+   return: an int = 1 if the two strings are equal
+	   -1 if the two strings are different
+   
+   we use it for checking the name of table into check entry function
 
+*/
+int str_cmp(char* s1, char* s2)
+{
+	__u32* i =(__u32*) kmalloc(sizeof(__u32),GFP_KERNEL);
+	i=0;
+	while(s1[*i] == s2[i] && s1[*i] != '\0' && s2[*i] != '\0') *i++;
+	if (s1[*i] == '\0' && s2[*i] == '\0')
+		{
+			kfree(i);
+			return 1;
+		}
+	else
+		{
+			kfree(i);
+			return -1;
+		}
+}
 
 /* This Function is called when in a new rule there is "-m packsan" 
 
@@ -32,11 +55,12 @@ static int packsan_mt_check (const struct  xt_mtchk_param *par)
 		"reachable through hooks 0x%x\n",
 		par-> table, par-> hook_mask);
 	
-	if (!(info->flags & (XT_PACKSAN_LOCAL_IN | XT_PACKSAN_POST_ROUTING))) {
-		pr_info("not1 testing for anything \n");
+	if (!(par->hook_mask & (XT_PACKSAN_LOCAL_IN | XT_PACKSAN_POST_ROUTING))) {
+		pr_info("Noone hook selected!!! \n");
 		return -EINVAL;
 	}
 	
+ 		
 	return 0;
 }
 
