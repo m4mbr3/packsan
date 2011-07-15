@@ -14,8 +14,26 @@ __attribute__((section(".gnu.linkonce.this_module"))) = {
  .arch = MODULE_ARCH_INIT,
 };
 
+static const struct modversion_info ____versions[]
+__used
+__attribute__((section("__versions"))) = {
+	{ 0x6fe1db55, "module_layout" },
+	{ 0x113a113e, "xt_unregister_match" },
+	{ 0x2a730576, "xt_register_match" },
+	{ 0x43b0c9c3, "preempt_schedule" },
+	{ 0x4c4fef19, "kernel_stack" },
+	{ 0x37a0cba, "kfree" },
+	{ 0x4aabc7c4, "__tracepoint_kmalloc" },
+	{ 0x6e787f7c, "slab_buffer_size" },
+	{ 0xb3dd40, "kmem_cache_alloc_notrace" },
+	{ 0xac971704, "malloc_sizes" },
+	{ 0xea147363, "printk" },
+};
+
 static const char __module_depends[]
 __used
 __attribute__((section(".modinfo"))) =
 "depends=x_tables";
 
+
+MODULE_INFO(srcversion, "C3D0CB2DB68FD7BB4CE851E");

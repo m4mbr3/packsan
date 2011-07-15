@@ -16,7 +16,7 @@ __u32 str_cmp(__u8* s1, __u8* s2)
 {
         __u32* i =(__u32*) kmalloc(sizeof(__u32),GFP_KERNEL);
         i=0;
-        while(s1[*i] == s2[i] && s1[*i] != '\0' && s2[*i] != '\0') *i++;
+        while(s1[*i] == s2[*i] && s1[*i] != '\0' && s2[*i] != '\0') *i++;
         if (s1[*i] == '\0' && s2[*i] == '\0')
                 {
                         kfree(i);

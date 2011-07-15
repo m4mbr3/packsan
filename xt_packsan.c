@@ -1,4 +1,5 @@
 #include "xt_packsan.h"
+#include "xt_packsan_util.h"
 
 #include <linux/module.h>
 #include <linux/init.h>
@@ -11,30 +12,6 @@
 #include <net/dsfield.h>
 #include <linux/skbuff.h>
 #include <linux/gfp.h>
-/* This Function is used for comparing two strings passed by parameter
-
-   return: an int = 1 if the two strings are equal
-	   -1 if the two strings are different
-   
-   we use it for checking the name of table into check entry function
-
-*/
-int str_cmp(char* s1, char* s2)
-{
-	__u32* i =(__u32*) kmalloc(sizeof(__u32),GFP_KERNEL);
-	i=0;
-	while(s1[*i] == s2[i] && s1[*i] != '\0' && s2[*i] != '\0') *i++;
-	if (s1[*i] == '\0' && s2[*i] == '\0')
-		{
-			kfree(i);
-			return 1;
-		}
-	else
-		{
-			kfree(i);
-			return -1;
-		}
-}
 
 /* This Function is called when in a new rule there is "-m packsan" 
 
@@ -49,18 +26,31 @@ int str_cmp(char* s1, char* s2)
 static int packsan_mt_check (const struct  xt_mtchk_param *par)
 {
 	const struct xt_packsan_mtinfo *info = par->matchinfo;
+	__u8* p= kmalloc(sizeof(__u8[8]),GFP_KERNEL);
 	
 	
 	pr_info("Added a rule with -m packsan in the %s table; this rule is "
 		"reachable through hooks 0x%x\n",
 		par-> table, par-> hook_mask);
 	
-	if (!(par->hook_mask & (XT_PACKSAN_LOCAL_IN | XT_PACKSAN_POST_ROUTING))) {
+	if (!(par->hook_mask & ( XT_PACKSAN_LOCAL_IN | XT_PACKSAN_POST_ROUTING ))) {
 		pr_info("Noone hook selected!!! \n");
 		return -EINVAL;
 	}
 	
- 		
+	p[0] =  'm';
+	p[1] =  'a';
+	p[2] =  'n';
+	p[3] =  'g';
+	p[4] =  'l';
+	p[5] =  'e';
+	p[6] =  '\0';
+	if( str_cmp(par->table, p) == -1){
+		pr_info("The inserted table isn't  mangle!!!");
+		kfree(p);
+		return -EINVAL;
+	}
+	kfree(p);
 	return 0;
 }
 
@@ -69,31 +59,15 @@ static void packsan_mt_destroy(const struct xt_mtdtor_param *par)
 	const struct xt_packsan_mtinfo *info = par->matchinfo;
 	pr_info ("Test for address %081X removed \n", info->src.ip);
 }
-
 static bool packsan_mt(const struct sk_buff *skb, const struct xt_action_param *par)
 {
 
 	const struct xt_packsan_mtinfo *info = par->matchinfo;
 	const struct iphdr *iph = ip_hdr(skb);
 	
-	if (info->flags & XT_PACKSAN_SRC)
-		if ((iph->saddr != info->src.ip) ^
-			!!(info->flags & XT_PACKSAN_SRC_INV))
-		{
-			pr_notice("src IP - no match\n");
-			return false;
-		}
-	if (info-> flags & XT_PACKSAN_DST)
-		if ((iph->daddr != info-> dst.ip) ^
-			!!(info->flags & XT_PACKSAN_DST_INV))
-		{
-			pr_notice("dst IP - no match\n");
-			return false;
-		}
 	return true;
 
 }
-
 static struct xt_match packsan_mt4_reg __read_mostly = {
 		.name		=	"packsan",
 		.revision	=	0,
@@ -104,7 +78,6 @@ static struct xt_match packsan_mt4_reg __read_mostly = {
 		.matchsize 	=	sizeof(struct xt_packsan_mtinfo),
 		.me		= 	THIS_MODULE,
 	};
-
 static int  __init packsan_mt_init (void)
 {
 	return xt_register_match(&packsan_mt4_reg);

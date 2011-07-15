@@ -4,8 +4,8 @@
 #include <linux/netfilter.h>
 #include <linux/netfilter_ipv4.h>
     enum {
-		XT_PACKSAN_LOCAL_IN_	=	1 << NF_IP_LOCAL_IN,
-		XT_PACKSAN_POST_ROUTING	=	1 << NF_IP_POST_ROUTING,
+		XT_PACKSAN_LOCAL_IN	=	1 << 1,
+		XT_PACKSAN_POST_ROUTING	=	1 << 4,
 	};
 
 	
