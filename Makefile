@@ -1,15 +1,8 @@
 # -*- Makefile -*-
 
-MODULES_DIR := /lib/modules/$(shell uname -r)
-KERNEL_DIR := ${MODULES_DIR}/build
-
-obj-m += xt_packsan.o
+KVERSION = $(shell uname -r)
 
 all:
-	make -C ${KERNEL_DIR} M=$$PWD;
-modules:
-	make -C ${KERNEL_DIR} M=$$PWD $@;
-modules_install:
-	make -C ${KERNEL_DIR} M=$$PWD $@;
+	make -C /lib/modules/$(KVERSION)/build M=$(PWD) modules
 clean:
-	make -C ${KERNEL_DIR} M=$$PWD $@;
+	make -C /lib/modules/$(KVERSION)/build M=$(PWD) clean
