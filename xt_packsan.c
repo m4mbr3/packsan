@@ -69,6 +69,7 @@ static void packsan_mt_destroy(const struct xt_mtdtor_param *par)
 	const struct xt_packsan_mtinfo *info = par->matchinfo;
 	pr_info ("Test for address %081X removed \n", info->src.ip);
 }
+
 static bool packsan_mt(const struct sk_buff *skb, const struct xt_action_param *par)
 {
 
@@ -92,6 +93,7 @@ static bool packsan_mt(const struct sk_buff *skb, const struct xt_action_param *
 	return true;
 
 }
+
 static struct xt_match packsan_mt4_reg __read_mostly = {
 		.name		=	"packsan",
 		.revision	=	0,
@@ -102,6 +104,7 @@ static struct xt_match packsan_mt4_reg __read_mostly = {
 		.matchsize 	=	sizeof(struct xt_packsan_mtinfo),
 		.me		= 	THIS_MODULE,
 	};
+
 static int  __init packsan_mt_init (void)
 {
 	return xt_register_match(&packsan_mt4_reg);
