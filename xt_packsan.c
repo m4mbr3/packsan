@@ -12,23 +12,31 @@
 #include <linux/skbuff.h>
 
 
+
+/* This Function is called when in a new rule there is "-m packsan" 
+
+   return: an int < 0 if the rule is  not correct
+	   0 if it is good
+
+   xt_matchk_param: is defined in /include/linux/netfilter/x_tables.h 
+	   check it for more info about xt_matchk_param
+   
+   Our checkentry function check if the format of rule is `iptables -A (INPUT|POSTROUTING) -t mangle  -m packsan`
+*/
 static int packsan_mt_check (const struct  xt_mtchk_param *par)
 {
 	const struct xt_packsan_mtinfo *info = par->matchinfo;
 	
-	pr_info("Added a rule with -m ipaddr in the %s table; this rule is "
+	
+	pr_info("Added a rule with -m packsan in the %s table; this rule is "
 		"reachable through hooks 0x%x\n",
 		par-> table, par-> hook_mask);
 	
-	if (!(info->flags & (XT_PACKSAN_SRC | XT_PACKSAN_DST))) {
-		pr_info("not testing for anything \n");
+	if (!(info->flags & (XT_PACKSAN_LOCAL_IN | XT_PACKSAN_POST_ROUTING))) {
+		pr_info("not1 testing for anything \n");
 		return -EINVAL;
 	}
-	if (ntohl(info->src.ip) == 0xDEADBEEF){
-	/*this just for fun */
-		pr_info("I'm sorry, Dave. I'm afraid I can't let you do that. \n");
-		return -EPERM;
-	}
+	
 	return 0;
 }
 
