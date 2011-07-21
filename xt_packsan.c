@@ -1,5 +1,5 @@
 #include "xt_packsan.h"
-#include "xt_packsan_util.h"
+//#include "xt_packsan_util.h"
 
 #include <linux/module.h>
 #include <linux/init.h>
@@ -10,8 +10,12 @@
 #include <linux/ipv6.h>
 #include <linux/netfilter/x_tables.h>
 #include <net/dsfield.h>
+#include <net/ip.h>
 #include <linux/skbuff.h>
 #include <linux/gfp.h>
+#include "linux/textsearch.h"
+
+inline static bool ps_look_and_replace(char *data_start, size_t data_len);
 
 /* This Function is called when in a new rule there is "-m packsan" 
 
@@ -25,7 +29,7 @@
 */
 static int packsan_mt_check (const struct  xt_mtchk_param *par)
 {
-	const struct xt_packsan_mtinfo *info = par->matchinfo;
+	//const struct xt_packsan_mtinfo *info = par->matchinfo;
 	__u8* p= kmalloc(sizeof(__u8[8]),GFP_KERNEL);
 	
 	
@@ -45,7 +49,7 @@ static int packsan_mt_check (const struct  xt_mtchk_param *par)
 	p[4] =  'l';
 	p[5] =  'e';
 	p[6] =  '\0';
-	if( str_cmp(par->table, p) == -1){
+	if( strcmp(par->table, p) == -1){
 		pr_info("The inserted table isn't  mangle!!!");
 		kfree(p);
 		return -EINVAL;
@@ -59,15 +63,37 @@ static void packsan_mt_destroy(const struct xt_mtdtor_param *par)
 	const struct xt_packsan_mtinfo *info = par->matchinfo;
 	pr_info ("Test for address %081X removed \n", info->src.ip);
 }
-static bool packsan_mt(const struct sk_buff *skb, const struct xt_action_param *par)
+static bool packsan_mt(const struct sk_buff *skb, struct xt_action_param *par)
 {
-
+	size_t data_len;
+	char *data_start;
+	/*
 	const struct xt_packsan_mtinfo *info = par->matchinfo;
 	const struct iphdr *iph = ip_hdr(skb);
-	
-	return true;
+	*/
+	data_start = skb->data + ip_hdrlen(skb) + sizeof(struct tcphdr);
+	data_len = skb->len - ip_hdrlen(skb) - sizeof(struct tcphdr);
+	return ps_look_and_replace(data_start, data_len);
+	//return true;
 
 }
+
+inline static bool ps_look_and_replace(char *data_start, size_t data_len) {
+	bool result=false;
+	char pattern[] = "ciao";
+	struct ts_state state;
+	struct ts_config *conf;
+	int pos;
+	conf = textsearch_prepare("bm", pattern, strlen(pattern), GFP_KERNEL, TS_AUTOLOAD);
+	pos = textsearch_find_continuous(conf, &state, data_start, data_len);
+	if (pos != UINT_MAX) {
+		printk("found entry at %d\n", pos);
+		result = true;
+	}
+	textsearch_destroy(conf);
+	return result;
+}
+
 static struct xt_match packsan_mt4_reg __read_mostly = {
 		.name		=	"packsan",
 		.revision	=	0,
