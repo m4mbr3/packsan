@@ -2,7 +2,7 @@
 //#include "xt_packsan_util.h"
 
 #include <linux/module.h>
-#include <linux/init.h>
+//#include <linux/init.h>
 #include <linux/kernel.h>
 #include <linux/netfilter.h>
 #include <linux/inet.h>
@@ -12,8 +12,10 @@
 #include <net/dsfield.h>
 #include <net/ip.h>
 #include <linux/skbuff.h>
-#include <linux/gfp.h>
-#include "linux/textsearch.h"
+//#include <linux/gfp.h>
+//#include "linux/textsearch.h"
+#include <linux/netfilter/x_tables.h>
+#include <linux/netfilter/xt_string.h>
 
 inline static bool ps_look_and_replace(char *data_start, size_t data_len);
 
@@ -63,18 +65,79 @@ static void packsan_mt_destroy(const struct xt_mtdtor_param *par)
 	const struct xt_packsan_mtinfo *info = par->matchinfo;
 	pr_info ("Test for address %081X removed \n", info->src.ip);
 }
+
+
+/*
+NO, NON E' EFFICIENTE NE' FIGO PER UN CA..O, COME KNUTH-MORRIS-PRAT O BOYER MOORE, MA ALMENO FUNZIONA ...
+diversamente da
+
+textsearch_prepare("kmp", pattern, strlen(pattern), GFP_KERNEL, TS_AUTOLOAD);
+* 
+* non supporta i patterns ...
+
+*/
+static unsigned int dummy_search(char *text, unsigned int len, char *pattern, unsigned int pattern_len) {
+	unsigned int text_index = 0;
+	unsigned int pat_index = 0;
+	bool found=false;
+	
+	for(text_index=0; (text_index < len) && (pat_index < pattern_len) ; text_index++) {
+		if(*(text + text_index) == *(pattern + pat_index)) {
+			pat_index++;
+			found=true;
+		} else {
+			text_index-=pat_index;
+			//text_index++;
+			pat_index=0;
+			found=false;
+		}
+	}
+	if(found) {
+		return text_index-pat_index-1;
+	} else {
+		return UINT_MAX;
+	}
+}
+
 static bool packsan_mt(const struct sk_buff *skb, struct xt_action_param *par)
 {
 	size_t data_len;
 	char *data_start;
+	__u32 beginning= ip_hdrlen(skb) + sizeof(struct tcphdr);
+	int index;
+	//struct ts_state state;
+	bool result=false;
+	char pattern[] = "ciao";
+
+	//struct ts_config *ts_conf = NULL;
+	//int patlen = strlen(pattern);
+
+	printk("received packet\n");
+	data_start = skb->data + beginning;
+	data_len = skb->len;
+	
 	/*
-	const struct xt_packsan_mtinfo *info = par->matchinfo;
-	const struct iphdr *iph = ip_hdr(skb);
+	printk("beginning %d - end %d\n",beginning,data_len);
+
+	ts_conf = textsearch_prepare("kmp", pattern, strlen(pattern), GFP_KERNEL, TS_AUTOLOAD);
+
+	printk("ready to search!\n");
+
+	memset(&state, 0, sizeof(struct ts_state));
+	if(ts_conf != NULL) textsearch_destroy(ts_conf);
 	*/
-	data_start = skb->data + ip_hdrlen(skb) + sizeof(struct tcphdr);
-	data_len = skb->len - ip_hdrlen(skb) - sizeof(struct tcphdr);
-	return ps_look_and_replace(data_start, data_len);
-	//return true;
+	
+	//yes, 6 is a magic number, but it should work in order to check only the layer 4 payload
+	if(dummy_search(data_start+6,data_len,pattern,strlen(pattern))!= UINT_MAX) {
+		result=true;
+		printk("found matching entry");
+		for(index = 0; index < data_len; index++) {
+			printk("%c",*(data_start+index+6));
+		}
+		printk("\n");
+	}
+
+	return true;
 
 }
 
@@ -123,3 +186,4 @@ MODULE_AUTHOR("PACKSAN TEAM");
 MODULE_DESCRIPTION("Xtables: Packet sanitizer, clean your packets from bad strings!!!");
 MODULE_LICENSE("GPL");
 MODULE_ALIAS("ipt_packsan");
+
