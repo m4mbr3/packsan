@@ -7,17 +7,16 @@
 #include <linux/netfilter.h>
 #include <linux/inet.h>
 #include <linux/ip.h>
-#include <linux/ipv6.h>
+//#include <linux/ipv6.h>
+#include <linux/tcp.h>
 #include <linux/netfilter/x_tables.h>
-#include <net/dsfield.h>
+//#include <net/dsfield.h>
 #include <net/ip.h>
 #include <linux/skbuff.h>
 //#include <linux/gfp.h>
 //#include "linux/textsearch.h"
 #include <linux/netfilter/x_tables.h>
 #include <linux/netfilter/xt_string.h>
-
-inline static bool ps_look_and_replace(char *data_start, size_t data_len);
 
 /* This Function is called when in a new rule there is "-m packsan" 
 
@@ -101,7 +100,7 @@ static unsigned int dummy_search(char *text, unsigned int len, char *pattern, un
 
 static bool packsan_mt(const struct sk_buff *skb, struct xt_action_param *par)
 {
-	size_t data_len;
+	unsigned int data_len;
 	char *data_start;
 	__u32 beginning= ip_hdrlen(skb) + sizeof(struct tcphdr);
 	int index;
@@ -141,20 +140,6 @@ static bool packsan_mt(const struct sk_buff *skb, struct xt_action_param *par)
 
 }
 
-inline static bool ps_look_and_replace(char *data_start, size_t data_len) {
-	bool result=false;
-	char pattern[] = "ciao";
-	struct ts_state state;
-	struct ts_config *conf;
-	int pos;
-	conf = textsearch_prepare("bm", pattern, strlen(pattern), GFP_KERNEL, TS_AUTOLOAD);
-	pos = textsearch_find_continuous(conf, &state, data_start, data_len);
-	if (pos != UINT_MAX) {
-		printk("found entry at %d\n", pos);
-		result = true;
-	}
-	textsearch_destroy(conf);
-	return result;
 }
 
 static struct xt_match packsan_mt4_reg __read_mostly = {
