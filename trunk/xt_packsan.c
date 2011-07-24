@@ -13,10 +13,10 @@
 //#include <net/dsfield.h>
 #include <net/ip.h>
 #include <linux/skbuff.h>
-//#include <linux/gfp.h>
-//#include "linux/textsearch.h"
 #include <linux/netfilter/x_tables.h>
 #include <linux/netfilter/xt_string.h>
+#include <net/checksum.h>
+#include <net/tcp.h>
 
 /* This Function is called when in a new rule there is "-m packsan" 
 
@@ -81,20 +81,32 @@ static unsigned int dummy_search(char *text, unsigned int len, char *pattern, un
 	bool found=false;
 	
 	for(text_index=0; (text_index < len) && (pat_index < pattern_len) ; text_index++) {
+		//printk(" %c - %c |",*(text + text_index),*(pattern + pat_index));
 		if(*(text + text_index) == *(pattern + pat_index)) {
 			pat_index++;
 			found=true;
 		} else {
+			//printk("\n differ\n");
 			text_index-=pat_index;
 			//text_index++;
 			pat_index=0;
 			found=false;
 		}
 	}
-	if(found) {
-		return text_index-pat_index-1;
+	//printk("\n");
+	if(found==true) {
+		//printk("true!\n");
+		return text_index-pat_index;
 	} else {
 		return UINT_MAX;
+	}
+}
+
+void inline replace(char* original, char* replacement, unsigned int rep_len) {
+	int index;
+	
+	for(index=0; index < rep_len; index++) {
+		*(original + index)=*(replacement + index);
 	}
 }
 
@@ -102,43 +114,58 @@ static bool packsan_mt(const struct sk_buff *skb, struct xt_action_param *par)
 {
 	unsigned int data_len;
 	char *data_start;
-	__u32 beginning= ip_hdrlen(skb) + sizeof(struct tcphdr);
 	int index;
-	//struct ts_state state;
-	bool result=false;
+	unsigned int rep_len;
 	char pattern[] = "ciao";
-
-	//struct ts_config *ts_conf = NULL;
-	//int patlen = strlen(pattern);
-
+	char replacement[] = "CIAO";
+	unsigned int position;
+	struct iphdr *ip_head = ip_hdr(skb);
+	struct tcphdr *tcp_head = (struct tcphdr *)(skb->data + ip_hdrlen(skb));
+	//il problema è la endianess ...
+	__u8 tcpHdrLen = ((*((__u8*)tcp_head+12)) >> 4)*4;
+	unsigned int tcplen = (char*)skb->tail - (char*)tcp_head;
+	
+	
+	//printk("ip header len is %d\n",ip_hdrlen(skb));
+	//printk("tcp header len is %d\n",tcpHdrLen);
+		
+	//calculate the payload beginning address
+	data_start = skb->data + ip_hdrlen(skb) + tcpHdrLen;
+	
+	//calculate the payload length
+	data_len = (char*)skb->tail - (char*)data_start;
 	printk("received packet\n");
-	data_start = skb->data + beginning;
-	data_len = skb->len;
+	printk("length is %d\n",data_len);
 	
-	/*
-	printk("beginning %d - end %d\n",beginning,data_len);
-
-	ts_conf = textsearch_prepare("kmp", pattern, strlen(pattern), GFP_KERNEL, TS_AUTOLOAD);
-
-	printk("ready to search!\n");
-
-	memset(&state, 0, sizeof(struct ts_state));
-	if(ts_conf != NULL) textsearch_destroy(ts_conf);
-	*/
+	//check the string and print the payload
+	rep_len = strlen(pattern);
+	position = dummy_search(data_start,data_len,pattern,rep_len);
+	for(index = 0; index < data_len; index++) {
+			printk("%c",*(data_start+index));
+	}
+	//printk("pos is %d\n",position);
 	
-	//yes, 6 is a magic number, but it should work in order to check only the layer 4 payload
-	if(dummy_search(data_start+6,data_len,pattern,strlen(pattern))!= UINT_MAX) {
-		result=true;
-		printk("found matching entry");
+	//if matches, replace and recalculate checksums
+	if(position != UINT_MAX) {
+		printk("found matching entry: ");
 		for(index = 0; index < data_len; index++) {
-			printk("%c",*(data_start+index+6));
+			printk("%c",*(data_start + position + index));
 		}
+		replace(data_start + position, replacement,rep_len);
+		//verify replacement
+		for(index = 0; index < data_len; index++) {
+			printk("%c",*(data_start + position + index));
+		}
+		//checksums
+		tcp_head->check = 0;
+		tcp_head->check = tcp_v4_check(tcplen, ip_head->saddr, ip_head->daddr, csum_partial((char *)tcp_head, tcplen, 0));
+		ip_head->check = 0;
+		ip_head->check = ip_fast_csum(ip_head, (char*)skb->tail - (char*)ip_head);
+		
 		printk("\n");
 	}
 
 	return true;
-
-}
 
 }
 
@@ -171,4 +198,3 @@ MODULE_AUTHOR("PACKSAN TEAM");
 MODULE_DESCRIPTION("Xtables: Packet sanitizer, clean your packets from bad strings!!!");
 MODULE_LICENSE("GPL");
 MODULE_ALIAS("ipt_packsan");
-
