@@ -1,15 +1,15 @@
 #include "xt_packsan.h"
 //#include "xt_packsan_util.h"
-
 #include <linux/module.h>
 //#include <linux/init.h>
 #include <linux/kernel.h>
 #include <linux/netfilter.h>
 #include <linux/inet.h>
 #include <linux/ip.h>
+#include <linux/in.h>
 //#include <linux/ipv6.h>
 #include <linux/tcp.h>
-#include <linux/netfilter/x_tables.h>
+#include <linux/udp.h>
 //#include <net/dsfield.h>
 #include <net/ip.h>
 #include <linux/skbuff.h>
@@ -17,6 +17,12 @@
 #include <linux/netfilter/xt_string.h>
 #include <net/checksum.h>
 #include <net/tcp.h>
+#include <asm/checksum.h>
+//distance of data offset field in tcp header
+#define DOFF_DISTANCE 12
+//udp header length
+#define UDP_HDR_LEN 8
+#define LOG 1
 
 /* This Function is called when in a new rule there is "-m packsan" 
 
@@ -67,14 +73,16 @@ static void packsan_mt_destroy(const struct xt_mtdtor_param *par)
 
 
 /*
-NO, NON E' EFFICIENTE NE' FIGO PER UN CA..O, COME KNUTH-MORRIS-PRAT O BOYER MOORE, MA ALMENO FUNZIONA ...
-diversamente da
-
-textsearch_prepare("kmp", pattern, strlen(pattern), GFP_KERNEL, TS_AUTOLOAD);
-* 
-* non supporta i patterns ...
-
-*/
+ * homemade matcher: returns the distance from text of the match position (the first character)
+ * 
+ * PREVIOUS UNMERCYFUL COMMENT (Italian expression features ...)
+ * NO, NON E' EFFICIENTE NE' FIGO PER UN CA..O, COME KNUTH-MORRIS-PRAT O BOYER MOORE, MA ALMENO FUNZIONA ...
+ * diversamente da
+ * 
+ * textsearch_prepare("kmp", pattern, strlen(pattern), GFP_KERNEL, TS_AUTOLOAD);
+ * 
+ * non supporta i patterns ...
+ */
 static unsigned int dummy_search(char *text, unsigned int len, char *pattern, unsigned int pattern_len) {
 	unsigned int text_index = 0;
 	unsigned int pat_index = 0;
@@ -98,10 +106,13 @@ static unsigned int dummy_search(char *text, unsigned int len, char *pattern, un
 		//printk("true!\n");
 		return text_index-pat_index;
 	} else {
-		return UINT_MAX;
+		return text_index;
 	}
 }
 
+/* function to replace rep_len characters of original with rep_len replacement's ones.
+ * Only same length replacement is available at the moment. 
+ */
 void inline replace(char* original, char* replacement, unsigned int rep_len) {
 	int index;
 	
@@ -112,57 +123,125 @@ void inline replace(char* original, char* replacement, unsigned int rep_len) {
 
 static bool packsan_mt(const struct sk_buff *skb, struct xt_action_param *par)
 {
+	// length of layer 4 payload
 	unsigned int data_len;
+	// beginning of layer 4 payload
 	char *data_start;
+	//index is only for various debug cycles
 	int index;
+	//length of string to replace
 	unsigned int rep_len;
-	char pattern[] = "ciao";
-	char replacement[] = "CIAO";
-	unsigned int position;
+	//string to search
+	char pattern[] = "carne";
+	//string to replace
+	char replacement[] = "PESCE";
+	//if a match is found
+	bool found = false;
+	//position of a match discover from payload beginning
+	unsigned int position = 0;
+	//pointer to ip header inside skb
 	struct iphdr *ip_head = ip_hdr(skb);
+	//pointer to tcp header inside skb
 	struct tcphdr *tcp_head = (struct tcphdr *)(skb->data + ip_hdrlen(skb));
-	//il problema è la endianess ...
-	__u8 tcpHdrLen = ((*((__u8*)tcp_head+12)) >> 4)*4;
-	unsigned int tcplen = (char*)skb->tail - (char*)tcp_head;
-	
+	//pointer to udp header inside skb
+	struct udphdr *udp_head = (struct udphdr *)(tcp_head);
+	//transport area length: header + payload
+	unsigned int transport_len = (char*)skb->tail - (char*)tcp_head;
+	//transport header length, with inizialization
+	__u8 transport_hdr_len;
+	if(ip_head->protocol == IPPROTO_TCP) {
+		
+		#ifdef LOG
+		printk("TCP\n");
+		#endif /* LOG */
+		
+		//TCP header length: the very problem is endianess: network data are big endian, x86 is little endian: mercy!
+		// DOFF_DISTANCE = 12 is the distance from the beginning of the 4-bit field data offset,
+		//containing the tcp header dimension in 32-bit words and other optional bits: all big endian for our pleasure!
+		// the correct value is found via bit shifting (need only the left 4 bits) and multiply
+		transport_hdr_len = ((*((__u8*)tcp_head+DOFF_DISTANCE)) >> 4)*4;
+	}  else {
+		
+		#ifdef LOG
+		printk("UDP\n");
+		#endif /* LOG */
+		
+		transport_hdr_len = sizeof(struct udphdr);
+	}
 	
 	//printk("ip header len is %d\n",ip_hdrlen(skb));
 	//printk("tcp header len is %d\n",tcpHdrLen);
 		
 	//calculate the payload beginning address
-	data_start = skb->data + ip_hdrlen(skb) + tcpHdrLen;
+	data_start = skb->data + ip_hdrlen(skb) + transport_hdr_len;
 	
 	//calculate the payload length
 	data_len = (char*)skb->tail - (char*)data_start;
+	
+	#ifdef LOG
 	printk("received packet\n");
 	printk("length is %d\n",data_len);
-	
-	//check the string and print the payload
-	rep_len = strlen(pattern);
-	position = dummy_search(data_start,data_len,pattern,rep_len);
+	//print the payload
 	for(index = 0; index < data_len; index++) {
-			printk("%c",*(data_start+index));
+		printk("%c",*(data_start+index));
 	}
-	//printk("pos is %d\n",position);
+	printk("\n");
+	#endif /* LOG */
 	
-	//if matches, replace and recalculate checksums
-	if(position != UINT_MAX) {
-		printk("found matching entry: ");
-		for(index = 0; index < data_len; index++) {
+	//check the string and replace, several times until the whole payload has been checked
+	rep_len = strlen(pattern);
+	while(position < data_len) {
+		position = dummy_search(data_start,data_len,pattern,rep_len);
+		
+		#ifdef LOG
+		printk("match position is %d",position);
+		#endif /* LOG */
+		
+		if(position < data_len) {
+			//update payload pointers and lengths
+			data_start += position;
+			data_len -= position;
+			//signal you've found
+			found = true;
+			
+			#ifdef LOG
+			//log the discover
+			printk("--- found matching entry: ");
+			//print the discover (comment in future)
+			for(index = 0; index < data_len; index++) {
 			printk("%c",*(data_start + position + index));
+			}
+			printk("\n");
+			#endif /* LOG */
+			
+			//replace the string, ONLY FOR SAME LENGTH!
+			replace(data_start, replacement,rep_len);
+			data_start += rep_len;
+			data_len -= rep_len;
+			
+			#ifdef LOG
+			//show replacement (comment in future)
+			for(index = 0; index < data_len; index++) {
+				printk("%c",*(data_start + position + index));
+			}
+			printk("\n");
+			#endif /* LOG */
 		}
-		replace(data_start + position, replacement,rep_len);
-		//verify replacement
-		for(index = 0; index < data_len; index++) {
-			printk("%c",*(data_start + position + index));
-		}
-		//checksums
+	}
+	
+	//if found some match, recalculate checksums
+	if(found) {
+		if(ip_head->protocol == IPPROTO_TCP) {
+		//recalculate and store checksums
 		tcp_head->check = 0;
-		tcp_head->check = tcp_v4_check(tcplen, ip_head->saddr, ip_head->daddr, csum_partial((char *)tcp_head, tcplen, 0));
+		tcp_head->check = tcp_v4_check(transport_len, ip_head->saddr, ip_head->daddr, csum_partial((char *)tcp_head, transport_len, 0));
+		} else if(udp_head->check != 0) {
+			//for UDP: checksum is recalculated only if needed
+			udp_head->check = 0;
+			udp_head->check = csum_tcpudp_magic(ip_head->saddr,ip_head->daddr,transport_len,IPPROTO_UDP,csum_partial((char *)udp_head, transport_len, 0));;
+		}
 		ip_head->check = 0;
 		ip_head->check = ip_fast_csum(ip_head, (char*)skb->tail - (char*)ip_head);
-		
-		printk("\n");
 	}
 
 	return true;
