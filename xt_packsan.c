@@ -72,43 +72,104 @@ static void packsan_mt_destroy(const struct xt_mtdtor_param *par)
 }
 
 
-/*
- * homemade matcher: returns the distance from text of the match position (the first character)
- * 
- * PREVIOUS UNMERCYFUL COMMENT (Italian expression features ...)
- * NO, NON E' EFFICIENTE NE' FIGO PER UN CA..O, COME KNUTH-MORRIS-PRAT O BOYER MOORE, MA ALMENO FUNZIONA ...
- * diversamente da
- * 
- * textsearch_prepare("kmp", pattern, strlen(pattern), GFP_KERNEL, TS_AUTOLOAD);
- * 
- * non supporta i patterns ...
- */
-static unsigned int dummy_search(char *text, unsigned int len, char *pattern, unsigned int pattern_len) {
-	unsigned int text_index = 0;
-	unsigned int pat_index = 0;
-	bool found=false;
-	
-	for(text_index=0; (text_index < len) && (pat_index < pattern_len) ; text_index++) {
-		//printk(" %c - %c |",*(text + text_index),*(pattern + pat_index));
-		if(*(text + text_index) == *(pattern + pat_index)) {
-			pat_index++;
-			found=true;
-		} else {
-			//printk("\n differ\n");
-			text_index-=pat_index;
-			//text_index++;
-			pat_index=0;
-			found=false;
-		}
-	}
-	//printk("\n");
-	if(found==true) {
-		//printk("true!\n");
-		return text_index-pat_index;
-	} else {
-		return text_index;
-	}
+
+
+
+
+
+//struttura che rappresenta un nodo nella lista delle occorrenze.
+typedef struct occurrence{
+    int pos_occurrence;
+    struct occurrence *next_occurrence;
+}occurrence;
+
+//funzione che aggiunge in testa alla lista una nuova occorrenza.
+//head e' il puntatore alla testa della lista, pos_occurrence e' la posizione nel testo della nuova occorrenza da aggiungere.
+//ritorna la nuova testa della lista aggiornata con il nuovo valore.
+static occurrence* prepend(occurrence* head, int pos_occurrence){
+  occurrence* new;
+  if(head == NULL){
+    head = (occurrence*)kmalloc(sizeof(occurrence), GFP_ATOMIC);
+    head->pos_occurrence = pos_occurrence;
+    head->next_occurrence = NULL;
+  } else {
+    new = (occurrence*)kmalloc(sizeof(occurrence), GFP_ATOMIC);
+    new->pos_occurrence = pos_occurrence;
+    new->next_occurrence = head;
+    head = new;
+  }
+  return head;
 }
+
+//dealloca l'intera lista delle occorrenze se diversa da NULL.
+static void dealloc_all_list(occurrence* head){
+  occurrence* next_occurrence;
+  if(head == NULL){
+    return;
+  }
+  for(;head->next_occurrence != NULL; head = next_occurrence){
+    next_occurrence = head->next_occurrence;
+    kfree(head);
+  }
+  kfree(head);
+}
+
+//funzione ausiliaria dell'algoritmo KMP che precalcola l'array pi[] in base al pattern.
+//p e' il pattern e p_length la sua lunghezza.
+//pi puntatore a un array di interi precalcolati in base al pattern.
+static void compute_prefix_function(char* p, int p_length, int* pi){
+  int k;
+  int q;
+  pi[0]=0;
+  k=0;  
+  for(q=1; q<p_length; q++){
+    while( k>0 && p[k]!=p[q] )
+      k=pi[k];
+    if( p[k] == p[q])
+      k=k+1;
+    pi[q] = k;
+    
+  }
+}
+
+//Algoritmo KMP per ricerca stringhe in un testo.
+//T puntatore al testo, T_length lunghezza del testo.
+//P puntatore al pattern, P_length lunghezza del pattern.
+//restituisce un puntatore alla lista delle correzze trovate oppure NULL se non ve ne sono.
+//NOTA: la lista delle occorrenze e' ritornata in ordine inverso per il semplice motivo che aggiungere in testa alla lista
+//ha un costo costante invece aggungere in coda no
+static occurrence* KMP_Matcher(char* T, int T_length, char* P, int P_length){
+  int n = T_length;
+  int m = P_length;
+  int q=0;
+  int i;
+  int* pi = (int*)kmalloc(m * sizeof(int), GFP_ATOMIC);
+  occurrence *head = NULL;
+  compute_prefix_function(P, m, pi);
+  for(i=0; i<n; i++){
+    while(q>0 && P[q] != T[i])
+      q = pi[q];
+    if( P[q] == T[i] )
+      q = q+1;
+    if ( q == m){
+      head = prepend(head, i-m+1);
+      q = pi[q-1];
+    }  
+  }
+  kfree(pi);
+  return head;
+}
+
+
+
+
+
+
+
+
+
+
+
 
 /* function to replace rep_len characters of original with rep_len replacement's ones.
  * Only same length replacement is available at the moment. 
@@ -147,6 +208,8 @@ static bool packsan_mt(const struct sk_buff *skb, struct xt_action_param *par)
 	struct udphdr *udp_head = (struct udphdr *)(tcp_head);
 	//transport area length: header + payload
 	unsigned int transport_len = (char*)skb->tail - (char*)tcp_head;
+	//testa della lista delle occorrenze
+	occurrence* head;
 	//transport header length, with inizialization
 	__u8 transport_hdr_len;
 	if(ip_head->protocol == IPPROTO_TCP) {
@@ -190,47 +253,19 @@ static bool packsan_mt(const struct sk_buff *skb, struct xt_action_param *par)
 	
 	//check the string and replace, several times until the whole payload has been checked
 	rep_len = strlen(pattern);
-	while(position < data_len) {
-		position = dummy_search(data_start,data_len,pattern,rep_len);
-		
-		#ifdef LOG
-		printk("match position is %d",position);
-		#endif /* LOG */
-		
-		if(position < data_len) {
-			//update payload pointers and lengths
-			data_start += position;
-			data_len -= position;
-			//signal you've found
-			found = true;
-			
-			#ifdef LOG
-			//log the discover
-			printk("--- found matching entry: ");
-			//print the discover (comment in future)
-			for(index = 0; index < data_len; index++) {
-			printk("%c",*(data_start + position + index));
-			}
-			printk("\n");
-			#endif /* LOG */
-			
-			//replace the string, ONLY FOR SAME LENGTH!
-			replace(data_start, replacement,rep_len);
-			data_start += rep_len;
-			data_len -= rep_len;
-			
-			#ifdef LOG
-			//show replacement (comment in future)
-			for(index = 0; index < data_len; index++) {
-				printk("%c",*(data_start + position + index));
-			}
-			printk("\n");
-			#endif /* LOG */
-		}
+	
+	
+	head = KMP_Matcher(data_start, data_len, pattern, rep_len);
+	
+	//if found some match, replace all
+	if(head != NULL){
+	  for(; head->next_occurrence !=NULL; head = head->next_occurrence)
+	    replace(data_start + head->pos_occurrence, replacement, rep_len);
+	  replace(data_start + head->pos_occurrence, replacement, rep_len);
 	}
 	
 	//if found some match, recalculate checksums
-	if(found) {
+	if(head != NULL) {
 		if(ip_head->protocol == IPPROTO_TCP) {
 		//recalculate and store checksums
 		tcp_head->check = 0;
@@ -243,6 +278,8 @@ static bool packsan_mt(const struct sk_buff *skb, struct xt_action_param *par)
 		ip_head->check = 0;
 		ip_head->check = ip_fast_csum(ip_head, (char*)skb->tail - (char*)ip_head);
 	}
+	
+	dealloc_all_list(head);
 
 	return true;
 
