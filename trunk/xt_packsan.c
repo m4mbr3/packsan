@@ -197,9 +197,9 @@ static bool packsan_mt(const struct sk_buff *skb, struct xt_action_param *par)
 	//string to replace
 	char replacement[] = "PESCE";
 	//if a match is found
-	bool found = false;
+	//bool found = false;
 	//position of a match discover from payload beginning
-	unsigned int position = 0;
+	//unsigned int position = 0;
 	//pointer to ip header inside skb
 	struct iphdr *ip_head = ip_hdr(skb);
 	//pointer to tcp header inside skb
