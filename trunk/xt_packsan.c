@@ -48,7 +48,7 @@ static int packsan_mt_check (const struct  xt_mtchk_param *par)
 		pr_info("Noone hook selected!!! \n");
 		return -EINVAL;
 	}
-	
+/*	
 	p[0] =  'm';
 	p[1] =  'a';
 	p[2] =  'n';
@@ -61,7 +61,7 @@ static int packsan_mt_check (const struct  xt_mtchk_param *par)
 		kfree(p);
 		return -EINVAL;
 	}
-	kfree(p);
+	kfree(p);*/
 	return 0;
 }
 
