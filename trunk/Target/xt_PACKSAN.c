@@ -1,4 +1,5 @@
 #include <linux/netfilter/x_tables.h>
+
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/init.h>
@@ -29,11 +30,11 @@ static struct xt_target packsan_tg_reg __read_mostly = {
 
 static int __init packsan_tg_init(void)
 {
-	return xtables_register_target(&packsan_tg_reg);
+	return  xt_register_target(&packsan_tg_reg);
 }
 static void __exit packsan_tg_exit(void)
 {
- 	xtables_unregister_target(&packsan_tg_reg);
+ 	xt_unregister_target(&packsan_tg_reg);
 }
 
 module_init(packsan_tg_init);
