@@ -7,13 +7,15 @@
 #include <linux/in.h>
 #include <linux/tcp.h>
 #include <linux/udp.h>
-#include <net/ip.h>
+//#include <net/ip.h>
 #include <linux/skbuff.h>
 #include <linux/netfilter/x_tables.h>
 #include <linux/netfilter/xt_string.h>
 #include <net/checksum.h>
 #include <net/tcp.h>
 #include <asm/checksum.h>
+//#include <arpa/inet.h>
+
 //distance of data offset field in tcp header
 #define DOFF_DISTANCE 12
 //udp header length
@@ -281,7 +283,7 @@ static bool packsan_mt(struct sk_buff *skb, struct xt_action_param *par)
 	int matches=0, match_len;
 	
 	//index is only for various cycles
-	int index;
+	int index, payload_diff;
 	
 	//pointer to ip header inside skb
 	struct iphdr *ip_head = ip_hdr(skb);
@@ -385,10 +387,10 @@ static bool packsan_mt(struct sk_buff *skb, struct xt_action_param *par)
 		//then the text
 		varlen_replace(l4_payload_start + head->position, l4_payload_len - head->position, new_skb_data, head);
 		
-		index = new_payload_len - l4_payload_len;
-		skb->tail += index;
-		skb->len += index;
-		l4_len += index;
+		payload_diff = new_payload_len - l4_payload_len;
+		skb->tail += payload_diff;
+		skb->len += payload_diff;
+		l4_len += payload_diff;
 		
 		//finally the skb_shared_info
 		memcpy(l4_payload_start + head->position,new_skb_data,new_payload_len - head->position);
@@ -404,24 +406,30 @@ static bool packsan_mt(struct sk_buff *skb, struct xt_action_param *par)
 		}
 		printk("\n");
 		//printk("new area allocated\n");
-		printk("new length is %d\n",new_payload_len + headers_len);		
+		printk("new IP length is %d\n",new_payload_len + headers_len);		
 		#endif
 		
 		//release new data
 		kfree(new_skb_data);
 		
 		if(ip_head->protocol == IPPROTO_TCP) {
+			//fuck TCP ACK mechanism: decrement sequence number
+			tcp_head->seq = htonl(ntohl(tcp_head->seq) - payload_diff);
 			//recalculate and store checksums
 			tcp_head->check = 0;
 			tcp_head->check = tcp_v4_check(l4_len, ip_head->saddr, ip_head->daddr, csum_partial((char *)tcp_head, l4_len, 0));
-		} else if(udp_head->check != 0) {
+		} else {
+			//update data length
+			udp_head->len = htons(ntohs(udp_head->len) + payload_diff);
+			if(udp_head->check != 0) {
 			//for UDP: checksum is recalculated only if needed
 			udp_head->check = 0;
 			udp_head->check = csum_tcpudp_magic(ip_head->saddr,ip_head->daddr,l4_len,IPPROTO_UDP,csum_partial((char *)udp_head, l4_len, 0));
+			}
 		}
-		ip_head->tot_len = (__be16)(new_payload_len + headers_len);
-		//ip_head->check = 0;
-		//ip_head->check = ip_fast_csum(ip_head, (char*)skb->tail - (char*)ip_head);
+		ip_head->tot_len = htons(new_payload_len + headers_len);
+		ip_head->check = 0;
+		ip_head->check = ip_fast_csum(ip_head, ip_hdrlen(skb));
 		
 		#ifdef LOG
 		printk("new headers:\n");
