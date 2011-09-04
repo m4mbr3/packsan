@@ -10,7 +10,7 @@
 	};
 
 	
-    struct xt_packsan_mtinfo {
+    struct xt_packsan_tginfo {
 	union nf_inet_addr src, dst;
 	__u8 flags;
 	};
