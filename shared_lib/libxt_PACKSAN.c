@@ -21,14 +21,14 @@ static void packsan_tg_help(void){
 }
 
 static struct xtables_target packsan_tg4_reg = {
-  .version = XTABLES_VERSION,
-  .name = "PACKSAN",
-  .revision = 0,
-  .family = NFPROTO_IPV4,
-  .size = XT_ALIGN(sizeof(struct xt_packsan_tginfo)),
-  .userspacesize = XT_ALIGN(sizeof(struct xt_packsan_tginfo)),
-  .help = packsan_tg_help,
-  .parse = packsan_tg4_parse,
+  .version 		= XTABLES_VERSION,
+  .name			= "PACKSAN",
+  .revision 		= 0,
+  .family 		= NFPROTO_IPV4,
+  .size 		= XT_ALIGN(0),
+  .userspacesize 	= XT_ALIGN(0),
+  .help 		= packsan_tg_help,
+  .parse 		= packsan_tg4_parse,
 };
 
 void _init(void)
