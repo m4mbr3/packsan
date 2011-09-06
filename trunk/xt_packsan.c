@@ -1,6 +1,66 @@
+#ifndef XT_PACKSAN_H_
+#define XT_PACKSAN_H_
 #include "xt_packsan.h"
-#include "xt_packsan_util.h"
-//typedef struct match_occurrence ps_match;
+#endif /* XT_PACKSAN_H_ */
+
+//#include <linux/module.h>
+//#include <linux/kernel.h>
+//#include <linux/netfilter.h>
+//#include <linux/inet.h>
+//#include <linux/ip.h>
+//#include <linux/in.h>
+//#include <linux/tcp.h>
+//#include <linux/udp.h>
+//#include <linux/skbuff.h>
+//#include <linux/netfilter/xt_string.h>
+//#include <net/checksum.h>
+//#include <net/tcp.h>
+//#include <asm/checksum.h>
+
+// GENERIC LIBRARIES (for both match and target)
+#ifndef NETFILTER_H_
+#define NETFILTER_H_
+#include <linux/netfilter.h>
+#endif /* NETFILTER_H_ */
+
+#ifndef X_TABLES_H_
+#define X_TABLES_H_
+#include <linux/netfilter/x_tables.h>
+#endif /* X_TABLES_H */
+
+#include <linux/module.h>
+#include <linux/kernel.h>
+#include <linux/in.h>
+#include <linux/ip.h>
+#include <net/ip.h>
+#include <linux/tcp.h>
+#include <linux/udp.h>
+#include <linux/skbuff.h>
+
+
+//distance of data offset field in tcp header
+#ifndef DOFF_DISTANCE
+#define DOFF_DISTANCE 12
+#endif
+//udp header length
+#ifndef UDP_HDR_LEN
+#define UDP_HDR_LEN 8
+#endif
+
+//do you want to have a VERBOSE log of the module activity? set it to non-zero
+#ifndef LOG
+#define LOG 1
+#endif
+
+struct ps_match_occurrence;
+typedef struct ps_match_occurrence ps_match;
+extern const unsigned int strings_number;
+extern const char* strings[];
+extern const char* var_len_replacements[];
+extern const char* const_len_replacements[];
+extern void dealloc_all_list(ps_match*);
+extern ps_match* KMP_Matcher(char*, int, const char*, int, unsigned int, int*);
+
 
 /* This Function is called when in a new rule there is "-m packsan" 
 
@@ -44,18 +104,15 @@ static void packsan_mt_destroy(const struct xt_mtdtor_param *par)
 }
 
 
-static bool packsan_mt(struct sk_buff *skb, struct xt_action_param *par)
-{
-	
+static bool packsan_mt(const struct sk_buff *skb, struct xt_action_param *par)
+{	
 	// length of layer 4 payload
 	unsigned int l4_payload_len;
 	// beginning of layer 4 payload
 	char *l4_payload_start;
-	
-	
-	
 	//matches number and length
-	int matches=0, match_len;
+	int matches=0;
+	int match_len;
 	
 	//index is only for various cycles
 	int index;
@@ -64,17 +121,13 @@ static bool packsan_mt(struct sk_buff *skb, struct xt_action_param *par)
 	struct iphdr *ip_head = ip_hdr(skb);
 	//pointer to tcp header inside skb
 	struct tcphdr *tcp_head = (struct tcphdr *)(skb->data + ip_hdrlen(skb));
-	
-	
-	
-	
-	
+		
 	//head of matches list
 	ps_match* string_head=NULL;
 	//transport header length
 	unsigned int l4_hdr_len;
 	//PROVA ALLOCAZIONE NUOVO SPAZIO
-	unsigned int headers_len, new_payload_len;
+	//unsigned int headers_len, new_payload_len;
 	
 	if(ip_head->protocol == IPPROTO_TCP) {
 		
@@ -87,6 +140,7 @@ static bool packsan_mt(struct sk_buff *skb, struct xt_action_param *par)
 		//containing the tcp header dimension in 32-bit words and other optional bits: all big endian for our pleasure!
 		// the correct value is found via bit shifting (need only the left 4 bits) and multiply
 		l4_hdr_len = ((*((__u8*)tcp_head+DOFF_DISTANCE)) >> 4)*4;
+		
 	}  else if(ip_head->protocol == IPPROTO_UDP) {
 		
 		#ifdef LOG
@@ -94,46 +148,42 @@ static bool packsan_mt(struct sk_buff *skb, struct xt_action_param *par)
 		#endif
 		
 		l4_hdr_len = sizeof(struct udphdr);
+		
 	} else {
 		
 		//ICMP packet: out of the balls! cannot be modified
-		return true;
+		return false;
 	}
-	//calculate the headers length
-	headers_len = ip_hdrlen(skb) + l4_hdr_len;
-	
+
 	//calculate the payload beginning address
-	l4_payload_start = skb->data + headers_len;
+	l4_payload_start = skb->data + ip_hdrlen(skb) + l4_hdr_len;
 	
 	//calculate the payload length
 	l4_payload_len = (char*)skb->tail - (char*)l4_payload_start;
 	
 	#ifdef LOG
 	printk("received packet\n");
-	printk("length is %d\n",l4_payload_len);
+	printk("l4 payload length is %d\n",l4_payload_len);
 	//print the payload
+	printk("packet payload is\n");
 	for(index = 0; index < l4_payload_len; index++) {
 		printk("%c",*(l4_payload_start+index));
 	}
 	printk("\n");
 	#endif
 	
-	new_payload_len=l4_payload_len;
-	
 	//find multiple strings
-	for(index=0; index < STRINGS; index++) {
-		matches = 0;
+	for(index=0; index < strings_number; index++) {
 		match_len = strlen(strings[index]);
 		string_head = KMP_Matcher(l4_payload_start, l4_payload_len, strings[index], match_len, index, &matches);
 		//update data length
 		if(string_head != NULL) {
-			  printk("1 packet matched\n");
+			  printk("packet matched\n");
+			  dealloc_all_list(string_head);
 			  return true;
 		}
 	}
 	
-	
-
 	return false;
 
 }
