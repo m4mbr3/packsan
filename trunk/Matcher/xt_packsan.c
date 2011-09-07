@@ -70,7 +70,6 @@ extern ps_match* KMP_Matcher(char* T, int T_length, const char* P, int P_length,
  * \param par the parameters given to iptables
  * \return 0 if the insertion conditions are met, -EINVAL otherwise
  */
-
 static int packsan_mt_check (const struct xt_mtchk_param *par)
 {
 	  pr_info("\n*************PACKSAN MATCHER*****************\n");
@@ -99,7 +98,6 @@ static int packsan_mt_check (const struct xt_mtchk_param *par)
  * 
  * \param par structure that describes some details about the module invocation
  */
-
 static void packsan_mt_destroy(const struct xt_mtdtor_param *par)
 {	
 	pr_info ("\n************PACKSAN MATCHER***************\n");
@@ -116,7 +114,6 @@ static void packsan_mt_destroy(const struct xt_mtdtor_param *par)
  * \param par a struct that has some additional information about the packet (I/O devices, fragments ... see docs)
  * \return true if the packet matches at least one string, false otherwise
  */
-
 static bool packsan_mt(const struct sk_buff *skb, struct xt_action_param *par)
 {	
 	// length of layer 4 payload
@@ -204,7 +201,6 @@ static bool packsan_mt(const struct sk_buff *skb, struct xt_action_param *par)
 /*! \var struct xt_match packsan_mt4_reg
  * \brief this struct contains all the information to register the module inside iptables.
  */
-
 static struct xt_match packsan_mt4_reg __read_mostly = {
 		.name			=	"packsan",
 		.revision		=	0,
@@ -223,7 +219,6 @@ static struct xt_match packsan_mt4_reg __read_mostly = {
  * 
  * \return 0 if the insertion succeeds, non - 0 otherwise
  */	
-	
 static int  __init packsan_mt_init (void)
 {
 	return xt_register_match(&packsan_mt4_reg);
@@ -236,7 +231,6 @@ static int  __init packsan_mt_init (void)
  * 
  * \return 0 if the extraction succeeds, non - 0 otherwise
  */
-
 static void __exit packsan_mt_exit(void)
 {
 	xt_unregister_match(&packsan_mt4_reg);
