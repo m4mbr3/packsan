@@ -74,33 +74,27 @@ extern ps_match* KMP_Matcher(char*, int, const char*, int, unsigned int, int*);
 */
 static int packsan_mt_check (const struct  xt_mtchk_param *par)
 {
-	__u8* p= kmalloc(sizeof(__u8[8]),GFP_KERNEL);
-	  p[0] =  'm';
-	  p[1] =  'a';
-	  p[2] =  'n';
-	  p[3] =  'g';
-	  p[4] =  'l';
-	  p[5] =  'e';
-	  p[6] =  '\0';
+	  pr_info("\n*************PACKSAN MATCHER*****************\n");
 	  pr_info("Added a rule with -m packsan in the %s table \n ",
 		par-> table);
 	  if (!(par->hook_mask & ( XT_PACKSAN_LOCAL_IN | XT_PACKSAN_POST_ROUTING ))) {
 		  pr_info("Noone hook selected!!! \n");
 		  return -EINVAL;
 	  }
-	  if( strcmp(par->table, p) == -1){
-		  pr_info("The inserted table isn't  mangle!!!");
-		  kfree(p);
+	  if( strcmp(par->table, "mangle") == -1){
+		  pr_info("The inserted table value isn't  mangle!!!");
 		  return -EINVAL;
 	  }
-	  kfree(p);
-	  return 0;
+	  pr_info("\nThe new rule has been inserted!!!\n");
+	  pr_info("\n**********Enjoy it********************\n");
+	  return 1;
 }
 
 static void packsan_mt_destroy(const struct xt_mtdtor_param *par)
 {	
-	const struct xt_packsan_mtinfo *info = par->matchinfo;
-	pr_info ("Test for address %081X removed \n", info->src.ip);
+	pr_info ("\n************PACKSAN MATCHER***************\n");
+	pr_info ("\nYou have Destroyed one rule with -m packsan\n");
+	pr_info ("\n************Goodbye********************\n");
 }
 
 
