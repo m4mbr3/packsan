@@ -1,4 +1,4 @@
-/*! \file libxt_packsan.c
+/*! \file libxt_PACKSAN.c
  * \brief interface between user space and target module
  */
 
