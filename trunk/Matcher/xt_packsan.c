@@ -37,6 +37,7 @@
 /*! \defgroup Extern_Declarations External members, contained in xt_packsan.h and in common.
  */
 struct ps_match_occurrence;
+struct xt_action_param;
 //typedef struct ps_match_occurrence ps_match;
 extern const unsigned int strings_number; /*!< \ingroup Extern_Declarations Number of the strings to search for inside the packet */
 extern const char* strings[]; /*!< \ingroup Extern_Declarations Strings to search for inside the packet */
