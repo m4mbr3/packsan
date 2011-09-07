@@ -1,23 +1,36 @@
-//#include <linux/module.h>
-//#include <linux/init.h>
-//#include <linux/kernel.h>
-//#include <linux/netfilter.h>
-//#include <linux/inet.h>
-//#include <linux/ip.h>
-//#include <linux/ipv6.h>
 #include <xtables.h>
-//#include <net/dsfield.h>
-//#include <linux/skbuff.h>
 #include <stdio.h>
 #include <stdbool.h>
-#include "xt_packsan.h"
+#include <getopt.h>
+#include <string.h>
+
+
+static const struct option packsan_mt_opts[] = {
+  {NULL},
+  };
 
 static int packsan_mt4_parse(int c, char **argv, int invert, unsigned int *flags, const void *entry, struct xt_entry_match **match){
+  /* We have no extra-option then we no parse anything */
   return true;
 }
 
+static void packsan_mt_check(unsigned int flags)
+{
+  /*We have no extra-option then we no check anything*/
+}
+
+
+static void packsan_mt4_print(const void *entry,
+			     const struct xt_entry_match *match, int numeric)
+{
+  printf("\n[!] No optiont to print...\n");
+}
+
+
 static void packsan_mt_help(void){
-  printf("DA COMPLETARE CON L'HELP");
+  printf("\nPacksan match options:\n"
+	 "\n[!] At the moment, No option avaiable  \n"
+	 );
 }
 
 static struct xtables_match packsan_mt4_reg = {
@@ -25,10 +38,13 @@ static struct xtables_match packsan_mt4_reg = {
   .name = "packsan",
   .revision = 0,
   .family = NFPROTO_IPV4,
-  .size = XT_ALIGN(sizeof(struct xt_packsan_mtinfo)),
-  .userspacesize = XT_ALIGN(sizeof(struct xt_packsan_mtinfo)),
+  .size = XT_ALIGN(0),
+  .userspacesize = XT_ALIGN(0),
   .help = packsan_mt_help,
   .parse = packsan_mt4_parse,
+  .final_check = packsan_mt_check,
+  .extra_opts = packsan_mt_opts,
+  .print = packsan_mt4_print,
 };
 
 void _init(void)
