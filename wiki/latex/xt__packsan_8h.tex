@@ -1,0 +1,55 @@
+\hypertarget{xt__packsan_8h}{
+\section{trunk/Matcher/xt\_\-packsan.h File Reference}
+\label{xt__packsan_8h}\index{trunk/Matcher/xt\_\-packsan.h@{trunk/Matcher/xt\_\-packsan.h}}
+}
+
+
+file containing the shared data and functions, used by both matcher and target modules.  
+
+
+{\ttfamily \#include $<$linux/netfilter\_\-ipv4.h$>$}\par
+{\ttfamily \#include $<$linux/netfilter.h$>$}\par
+{\ttfamily \#include $<$linux/netfilter/x\_\-tables.h$>$}\par
+{\ttfamily \#include $<$linux/module.h$>$}\par
+{\ttfamily \#include $<$linux/kernel.h$>$}\par
+{\ttfamily \#include $<$linux/in.h$>$}\par
+{\ttfamily \#include $<$linux/ip.h$>$}\par
+{\ttfamily \#include $<$net/ip.h$>$}\par
+{\ttfamily \#include $<$linux/tcp.h$>$}\par
+{\ttfamily \#include $<$linux/udp.h$>$}\par
+{\ttfamily \#include $<$linux/skbuff.h$>$}\par
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{structps__match__occurrence}{ps\_\-match\_\-occurrence}
+\begin{DoxyCompactList}\small\item\em stores the information of the matcher for the module extraction. \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{xt__packsan_8h_a180146e5aee8684e06f9637a99f7ec79}{
+typedef struct \hyperlink{structps__match__occurrence}{ps\_\-match\_\-occurrence} \hyperlink{xt__packsan_8h_a180146e5aee8684e06f9637a99f7ec79}{ps\_\-match}}
+\label{xt__packsan_8h_a180146e5aee8684e06f9637a99f7ec79}
+
+\begin{DoxyCompactList}\small\item\em smart type definition for this widely used structure. \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+enum \{ {\bfseries XT\_\-PACKSAN\_\-LOCAL\_\-IN} =  1 $<$$<$ 1, 
+{\bfseries XT\_\-PACKSAN\_\-POST\_\-ROUTING} =  1 $<$$<$ 4
+ \}
+\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+const unsigned int \hyperlink{group__Extern__Declarations_ga2cf154e4b14801b467e37c8f1dcd0aad}{strings\_\-number} = 2
+\item 
+const char $\ast$ \hyperlink{group__Extern__Declarations_ga899c0fa2b3c57dba6154c77de83c8d39}{strings} \mbox{[}$\,$\mbox{]} = \{\char`\"{}carne\char`\"{},\char`\"{}gelato\char`\"{}\}
+\item 
+const char $\ast$ \hyperlink{group__Extern__Declarations_ga449ebc7257a18cdb95c138b530539f88}{var\_\-len\_\-replacements} \mbox{[}$\,$\mbox{]} = \{\char`\"{}PASTICCIO\char`\"{},\char`\"{}SALE\char`\"{}\}
+\item 
+const char $\ast$ \hyperlink{group__Extern__Declarations_gadcba2a878c84b367279910363410c587}{const\_\-len\_\-replacements} \mbox{[}$\,$\mbox{]} = \{\char`\"{}PESCE\char`\"{},\char`\"{}SALATO\char`\"{}\}
+\begin{DoxyCompactList}\small\item\em contains the string to replace into TCP packets \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+file containing the shared data and functions, used by both matcher and target modules. 

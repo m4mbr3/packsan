@@ -1,0 +1,153 @@
+\hypertarget{group__Extern__Declarations}{
+\section{External members, contained in xt\_\-packsan.h and in common.}
+\label{group__Extern__Declarations}\index{External members, contained in xt\_\-packsan.h and in common.@{External members, contained in xt\_\-packsan.h and in common.}}
+}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{group__Extern__Declarations_ga781096a07e039b7a9cbe48abc453759f}{dealloc\_\-all\_\-list} (\hyperlink{structps__match__occurrence}{ps\_\-match} $\ast$head)
+\begin{DoxyCompactList}\small\item\em deallocates the whole list of matches \item\end{DoxyCompactList}\item 
+\hyperlink{structps__match__occurrence}{ps\_\-match} $\ast$ \hyperlink{group__Extern__Declarations_gaf81c8d97479ed96113a9b00bba4232a5}{KMP\_\-Matcher} (char $\ast$T, int T\_\-length, const char $\ast$P, int P\_\-length, unsigned int string\_\-index, int $\ast$matches)
+\begin{DoxyCompactList}\small\item\em KMP matcher. \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+const unsigned int \hyperlink{group__Extern__Declarations_ga2cf154e4b14801b467e37c8f1dcd0aad}{strings\_\-number}
+\item 
+const char $\ast$ \hyperlink{group__Extern__Declarations_ga899c0fa2b3c57dba6154c77de83c8d39}{strings} \mbox{[}$\,$\mbox{]}
+\item 
+const char $\ast$ \hyperlink{group__Extern__Declarations_ga449ebc7257a18cdb95c138b530539f88}{var\_\-len\_\-replacements} \mbox{[}$\,$\mbox{]}
+\item 
+const char $\ast$ \hyperlink{group__Extern__Declarations_gadcba2a878c84b367279910363410c587}{const\_\-len\_\-replacements} \mbox{[}$\,$\mbox{]}
+\begin{DoxyCompactList}\small\item\em contains the string to replace into TCP packets \item\end{DoxyCompactList}\item 
+const unsigned int \hyperlink{group__Extern__Declarations_ga2cf154e4b14801b467e37c8f1dcd0aad}{strings\_\-number}
+\item 
+const char $\ast$ \hyperlink{group__Extern__Declarations_ga899c0fa2b3c57dba6154c77de83c8d39}{strings} \mbox{[}$\,$\mbox{]}
+\item 
+const char $\ast$ \hyperlink{group__Extern__Declarations_ga449ebc7257a18cdb95c138b530539f88}{var\_\-len\_\-replacements} \mbox{[}$\,$\mbox{]}
+\item 
+const char $\ast$ \hyperlink{group__Extern__Declarations_ga91ad013799247b2cd1330f1771d83cd9}{const\_\-len\_\-replacements} \mbox{[}$\,$\mbox{]}
+\begin{DoxyCompactList}\small\item\em contains the string to replace into TCP packets \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\hypertarget{group__Extern__Declarations_ga781096a07e039b7a9cbe48abc453759f}{
+\index{Extern\_\-Declarations@{Extern\_\-Declarations}!dealloc\_\-all\_\-list@{dealloc\_\-all\_\-list}}
+\index{dealloc\_\-all\_\-list@{dealloc\_\-all\_\-list}!Extern_Declarations@{Extern\_\-Declarations}}
+\subsubsection[{dealloc\_\-all\_\-list}]{\setlength{\rightskip}{0pt plus 5cm}void dealloc\_\-all\_\-list (
+\begin{DoxyParamCaption}
+\item[{{\bf ps\_\-match} $\ast$}]{head}
+\end{DoxyParamCaption}
+)}}
+\label{group__Extern__Declarations_ga781096a07e039b7a9cbe48abc453759f}
+
+
+deallocates the whole list of matches 
+
+
+\begin{DoxyParams}{Parameters}
+{\em head} & the head of the list (even NULL) \\
+\hline
+\end{DoxyParams}
+\hypertarget{group__Extern__Declarations_gaf81c8d97479ed96113a9b00bba4232a5}{
+\index{Extern\_\-Declarations@{Extern\_\-Declarations}!KMP\_\-Matcher@{KMP\_\-Matcher}}
+\index{KMP\_\-Matcher@{KMP\_\-Matcher}!Extern_Declarations@{Extern\_\-Declarations}}
+\subsubsection[{KMP\_\-Matcher}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ps\_\-match} $\ast$ KMP\_\-Matcher (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{T, }
+\item[{int}]{T\_\-length, }
+\item[{const char $\ast$}]{P, }
+\item[{int}]{P\_\-length, }
+\item[{unsigned int}]{string\_\-index, }
+\item[{int $\ast$}]{matches}
+\end{DoxyParamCaption}
+)}}
+\label{group__Extern__Declarations_gaf81c8d97479ed96113a9b00bba4232a5}
+
+
+KMP matcher. 
+
+This function looks for substring occurrencies in a whole text via the Knuth -\/ Morris -\/ Pratt algorithm. 
+\begin{DoxyParams}{Parameters}
+{\em T} & the text to search inside \\
+\hline
+{\em T\_\-length} & the text length \\
+\hline
+{\em P} & the substring to search \\
+\hline
+{\em P\_\-length} & òe substring length \\
+\hline
+{\em the} & index of the substring to search \\
+\hline
+{\em matches} & the pointer to an integer, which is to be incremented to count the found occurrencies \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+the head of the list of matches 
+\end{DoxyReturn}
+
+
+\subsection{Variable Documentation}
+\hypertarget{group__Extern__Declarations_gadcba2a878c84b367279910363410c587}{
+\index{Extern\_\-Declarations@{Extern\_\-Declarations}!const\_\-len\_\-replacements@{const\_\-len\_\-replacements}}
+\index{const\_\-len\_\-replacements@{const\_\-len\_\-replacements}!Extern_Declarations@{Extern\_\-Declarations}}
+\subsubsection[{const\_\-len\_\-replacements}]{\setlength{\rightskip}{0pt plus 5cm}const char $\ast$ {\bf const\_\-len\_\-replacements}\mbox{[}$\,$\mbox{]}}}
+\label{group__Extern__Declarations_gadcba2a878c84b367279910363410c587}
+
+
+contains the string to replace into TCP packets 
+
+:
+
+$<$ the strings to replace into UDP packets
+
+const\_\-len\_\-replacements strings MUST have the same length of those stored in strings, otherwise segment loss and connection block will happen with TCP protocol (trick in progress ...) \hypertarget{group__Extern__Declarations_ga91ad013799247b2cd1330f1771d83cd9}{
+\index{Extern\_\-Declarations@{Extern\_\-Declarations}!const\_\-len\_\-replacements@{const\_\-len\_\-replacements}}
+\index{const\_\-len\_\-replacements@{const\_\-len\_\-replacements}!Extern_Declarations@{Extern\_\-Declarations}}
+\subsubsection[{const\_\-len\_\-replacements}]{\setlength{\rightskip}{0pt plus 5cm}const char$\ast$ {\bf const\_\-len\_\-replacements}\mbox{[}$\,$\mbox{]}}}
+\label{group__Extern__Declarations_ga91ad013799247b2cd1330f1771d83cd9}
+
+
+contains the string to replace into TCP packets 
+
+:
+
+:
+
+$<$ the strings to replace into UDP packets
+
+const\_\-len\_\-replacements strings MUST have the same length of those stored in strings, otherwise segment loss and connection block will happen with TCP protocol (trick in progress ...) \hypertarget{group__Extern__Declarations_ga899c0fa2b3c57dba6154c77de83c8d39}{
+\index{Extern\_\-Declarations@{Extern\_\-Declarations}!strings@{strings}}
+\index{strings@{strings}!Extern_Declarations@{Extern\_\-Declarations}}
+\subsubsection[{strings}]{\setlength{\rightskip}{0pt plus 5cm}const char$\ast$ {\bf strings}\mbox{[}$\,$\mbox{]}}}
+\label{group__Extern__Declarations_ga899c0fa2b3c57dba6154c77de83c8d39}
+$<$ the number of strings to search \hypertarget{group__Extern__Declarations_ga899c0fa2b3c57dba6154c77de83c8d39}{
+\index{Extern\_\-Declarations@{Extern\_\-Declarations}!strings@{strings}}
+\index{strings@{strings}!Extern_Declarations@{Extern\_\-Declarations}}
+\subsubsection[{strings}]{\setlength{\rightskip}{0pt plus 5cm}const char$\ast$ {\bf strings}\mbox{[}$\,$\mbox{]}}}
+\label{group__Extern__Declarations_ga899c0fa2b3c57dba6154c77de83c8d39}
+$<$ the number of strings to search \hypertarget{group__Extern__Declarations_ga2cf154e4b14801b467e37c8f1dcd0aad}{
+\index{Extern\_\-Declarations@{Extern\_\-Declarations}!strings\_\-number@{strings\_\-number}}
+\index{strings\_\-number@{strings\_\-number}!Extern_Declarations@{Extern\_\-Declarations}}
+\subsubsection[{strings\_\-number}]{\setlength{\rightskip}{0pt plus 5cm}const unsigned int {\bf strings\_\-number}}}
+\label{group__Extern__Declarations_ga2cf154e4b14801b467e37c8f1dcd0aad}
+\hypertarget{group__Extern__Declarations_ga2cf154e4b14801b467e37c8f1dcd0aad}{
+\index{Extern\_\-Declarations@{Extern\_\-Declarations}!strings\_\-number@{strings\_\-number}}
+\index{strings\_\-number@{strings\_\-number}!Extern_Declarations@{Extern\_\-Declarations}}
+\subsubsection[{strings\_\-number}]{\setlength{\rightskip}{0pt plus 5cm}const unsigned int {\bf strings\_\-number}}}
+\label{group__Extern__Declarations_ga2cf154e4b14801b467e37c8f1dcd0aad}
+\hypertarget{group__Extern__Declarations_ga449ebc7257a18cdb95c138b530539f88}{
+\index{Extern\_\-Declarations@{Extern\_\-Declarations}!var\_\-len\_\-replacements@{var\_\-len\_\-replacements}}
+\index{var\_\-len\_\-replacements@{var\_\-len\_\-replacements}!Extern_Declarations@{Extern\_\-Declarations}}
+\subsubsection[{var\_\-len\_\-replacements}]{\setlength{\rightskip}{0pt plus 5cm}const char$\ast$ {\bf var\_\-len\_\-replacements}\mbox{[}$\,$\mbox{]}}}
+\label{group__Extern__Declarations_ga449ebc7257a18cdb95c138b530539f88}
+:
+
+$<$ the strings to search \hypertarget{group__Extern__Declarations_ga449ebc7257a18cdb95c138b530539f88}{
+\index{Extern\_\-Declarations@{Extern\_\-Declarations}!var\_\-len\_\-replacements@{var\_\-len\_\-replacements}}
+\index{var\_\-len\_\-replacements@{var\_\-len\_\-replacements}!Extern_Declarations@{Extern\_\-Declarations}}
+\subsubsection[{var\_\-len\_\-replacements}]{\setlength{\rightskip}{0pt plus 5cm}const char$\ast$ {\bf var\_\-len\_\-replacements}\mbox{[}$\,$\mbox{]}}}
+\label{group__Extern__Declarations_ga449ebc7257a18cdb95c138b530539f88}
+:
+
+$<$ the strings to search 

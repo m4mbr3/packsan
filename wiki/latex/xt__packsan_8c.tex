@@ -1,0 +1,102 @@
+\hypertarget{xt__packsan_8c}{
+\section{trunk/Matcher/xt\_\-packsan.c File Reference}
+\label{xt__packsan_8c}\index{trunk/Matcher/xt\_\-packsan.c@{trunk/Matcher/xt\_\-packsan.c}}
+}
+
+
+The match for iptables.  
+
+
+{\ttfamily \#include \char`\"{}xt\_\-packsan.h\char`\"{}}\par
+{\ttfamily \#include $<$linux/netfilter/x\_\-tables.h$>$}\par
+\subsection*{Defines}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{xt__packsan_8c_ac246607383ce61a69f303ba2e29e6cc3}{
+\#define {\bfseries X\_\-TABLES\_\-H\_\-}}
+\label{xt__packsan_8c_ac246607383ce61a69f303ba2e29e6cc3}
+
+\item 
+\#define \hyperlink{xt__packsan_8c_aa8c5d183e40aee94cc32b1eb54e9c8cc}{DOFF\_\-DISTANCE}~12
+\item 
+\#define \hyperlink{xt__packsan_8c_a4e1d4437ed494b8b2d172764b9a18f5c}{UDP\_\-HDR\_\-LEN}~8
+\item 
+\#define \hyperlink{xt__packsan_8c_a159ca84d25a5487d8e81e4438725df19}{LOG}~1
+\begin{DoxyCompactList}\small\item\em Set it to 1 to log the activity. \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{group__Extern__Declarations_ga781096a07e039b7a9cbe48abc453759f}{dealloc\_\-all\_\-list} (\hyperlink{structps__match__occurrence}{ps\_\-match} $\ast$head)
+\begin{DoxyCompactList}\small\item\em deallocates the whole list of matches \item\end{DoxyCompactList}\item 
+\hyperlink{structps__match__occurrence}{ps\_\-match} $\ast$ \hyperlink{group__Extern__Declarations_gaf81c8d97479ed96113a9b00bba4232a5}{KMP\_\-Matcher} (char $\ast$T, int T\_\-length, const char $\ast$P, int P\_\-length, unsigned int string\_\-index, int $\ast$matches)
+\begin{DoxyCompactList}\small\item\em KMP matcher. \item\end{DoxyCompactList}\item 
+\hyperlink{xt__packsan_8c_a3ebfe131a827ed09e96eb46ece4da351}{module\_\-init} (packsan\_\-mt\_\-init)
+\item 
+\hyperlink{xt__packsan_8c_a1c7a8a6bcdc5883c88ac92bfbb382a78}{module\_\-exit} (packsan\_\-mt\_\-exit)
+\item 
+\hyperlink{group__mt__info_ga951bcda00d8a487070fd7be5c363d943}{MODULE\_\-AUTHOR} (\char`\"{}PACKSAN TEAM $<$packsanteam@gmail.com\char`\"{})
+\item 
+\hyperlink{group__mt__info_ga7884adf036695ba839028e1d0f7e8d17}{MODULE\_\-DESCRIPTION} (\char`\"{}Xtables: Packet sanitizer, clean your packets from bad strings!!!\char`\"{})
+\item 
+\hyperlink{group__mt__info_gad94b36675e7eb067ea3ce6ff9e244a44}{MODULE\_\-LICENSE} (\char`\"{}GPL\char`\"{})
+\item 
+\hyperlink{group__mt__info_gae1143a6664694334dd30c6e934afafe8}{MODULE\_\-ALIAS} (\char`\"{}ipt\_\-packsan\char`\"{})
+\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+const unsigned int \hyperlink{group__Extern__Declarations_ga2cf154e4b14801b467e37c8f1dcd0aad}{strings\_\-number}
+\item 
+const char $\ast$ \hyperlink{group__Extern__Declarations_ga899c0fa2b3c57dba6154c77de83c8d39}{strings} \mbox{[}$\,$\mbox{]}
+\item 
+const char $\ast$ \hyperlink{group__Extern__Declarations_ga449ebc7257a18cdb95c138b530539f88}{var\_\-len\_\-replacements} \mbox{[}$\,$\mbox{]}
+\item 
+const char $\ast$ \hyperlink{group__Extern__Declarations_gadcba2a878c84b367279910363410c587}{const\_\-len\_\-replacements} \mbox{[}$\,$\mbox{]}
+\begin{DoxyCompactList}\small\item\em contains the string to replace into TCP packets \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+The match for iptables. This file contains the packsan match, with the matching function and the data structures needed to load it through iptables. 
+
+\subsection{Define Documentation}
+\hypertarget{xt__packsan_8c_aa8c5d183e40aee94cc32b1eb54e9c8cc}{
+\index{xt\_\-packsan.c@{xt\_\-packsan.c}!DOFF\_\-DISTANCE@{DOFF\_\-DISTANCE}}
+\index{DOFF\_\-DISTANCE@{DOFF\_\-DISTANCE}!xt_packsan.c@{xt\_\-packsan.c}}
+\subsubsection[{DOFF\_\-DISTANCE}]{\setlength{\rightskip}{0pt plus 5cm}\#define DOFF\_\-DISTANCE~12}}
+\label{xt__packsan_8c_aa8c5d183e40aee94cc32b1eb54e9c8cc}
+Distance of data offset field in tcp header \hypertarget{xt__packsan_8c_a159ca84d25a5487d8e81e4438725df19}{
+\index{xt\_\-packsan.c@{xt\_\-packsan.c}!LOG@{LOG}}
+\index{LOG@{LOG}!xt_packsan.c@{xt\_\-packsan.c}}
+\subsubsection[{LOG}]{\setlength{\rightskip}{0pt plus 5cm}\#define LOG~1}}
+\label{xt__packsan_8c_a159ca84d25a5487d8e81e4438725df19}
+
+
+Set it to 1 to log the activity. 
+
+Do you want to have a VERBOSE log of the module activity? set it to non-\/zero. \hypertarget{xt__packsan_8c_a4e1d4437ed494b8b2d172764b9a18f5c}{
+\index{xt\_\-packsan.c@{xt\_\-packsan.c}!UDP\_\-HDR\_\-LEN@{UDP\_\-HDR\_\-LEN}}
+\index{UDP\_\-HDR\_\-LEN@{UDP\_\-HDR\_\-LEN}!xt_packsan.c@{xt\_\-packsan.c}}
+\subsubsection[{UDP\_\-HDR\_\-LEN}]{\setlength{\rightskip}{0pt plus 5cm}\#define UDP\_\-HDR\_\-LEN~8}}
+\label{xt__packsan_8c_a4e1d4437ed494b8b2d172764b9a18f5c}
+UDP header length: it's constant. 
+
+\subsection{Function Documentation}
+\hypertarget{xt__packsan_8c_a1c7a8a6bcdc5883c88ac92bfbb382a78}{
+\index{xt\_\-packsan.c@{xt\_\-packsan.c}!module\_\-exit@{module\_\-exit}}
+\index{module\_\-exit@{module\_\-exit}!xt_packsan.c@{xt\_\-packsan.c}}
+\subsubsection[{module\_\-exit}]{\setlength{\rightskip}{0pt plus 5cm}module\_\-exit (
+\begin{DoxyParamCaption}
+\item[{packsan\_\-mt\_\-exit}]{}
+\end{DoxyParamCaption}
+)}}
+\label{xt__packsan_8c_a1c7a8a6bcdc5883c88ac92bfbb382a78}
+Linux macro to indicate which function to call at extraction. \hypertarget{xt__packsan_8c_a3ebfe131a827ed09e96eb46ece4da351}{
+\index{xt\_\-packsan.c@{xt\_\-packsan.c}!module\_\-init@{module\_\-init}}
+\index{module\_\-init@{module\_\-init}!xt_packsan.c@{xt\_\-packsan.c}}
+\subsubsection[{module\_\-init}]{\setlength{\rightskip}{0pt plus 5cm}module\_\-init (
+\begin{DoxyParamCaption}
+\item[{packsan\_\-mt\_\-init}]{}
+\end{DoxyParamCaption}
+)}}
+\label{xt__packsan_8c_a3ebfe131a827ed09e96eb46ece4da351}
+Linux macro to indicate which function to call at insertion. 
