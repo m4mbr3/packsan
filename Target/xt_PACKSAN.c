@@ -1,6 +1,6 @@
 #ifndef XT_PACKSAN_H_
 #define XT_PACKSAN_H_
-#include "../xt_packsan.h"
+#include "../Matcher/xt_packsan.h"
 #endif /* XT_PACKSAN_H_ */
 
 //#include <linux/module.h>
@@ -62,7 +62,7 @@
 
 
 struct ps_match_occurrence;
-typedef struct ps_match_occurrence ps_match;
+//typedef struct ps_match_occurrence ps_match;
 extern const unsigned int strings_number;
 extern const char* strings[]; 
 extern const char* var_len_replacements[];
