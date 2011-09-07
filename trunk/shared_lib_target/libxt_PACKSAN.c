@@ -22,7 +22,8 @@ static const struct option packsan_tg_opts[]= {
  * \param flags bitmask to compare with local parameters
  * \return 0 if some option is not correct, nonzero otherwise
  */
-static int packsan_tg4_parse(int c, char **argv, int invert, unsigned int *flags, const void *entry, struct xt_entry_match **match){
+static int packsan_tg4_parse(int c, char **argv, int invert, unsigned int *flags, const void *entry, struct xt_entry_match **match)
+{
   /* We have no extra-option then we don't parse anything */
   return true;
 }
@@ -72,7 +73,7 @@ static struct xtables_target packsan_tg4_reg = {
 };
 
 /*! \fn void _init(void)
- * \brief function called at the insertion to register the module
+ * \brief function called at the insertion to register the module.
  */
 void _init(void)
 {

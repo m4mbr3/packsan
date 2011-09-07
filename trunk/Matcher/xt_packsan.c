@@ -246,10 +246,10 @@ module_init(packsan_mt_init); /*!< Linux macro to indicate which function to cal
 
 module_exit(packsan_mt_exit); /*!< Linux macro to indicate which function to call at extraction. */
 
-/*! \defgroup Module_info
+/*! \defgroup mt_info Matcher information
  * \brief Linux macros to register basic module information.
  */
-MODULE_AUTHOR("PACKSAN TEAM <packsanteam@gmail.com"); /*!< \ingroup Module_info */
-MODULE_DESCRIPTION("Xtables: Packet sanitizer, clean your packets from bad strings!!!"); /*!< \ingroup Module_info */
-MODULE_LICENSE("GPL"); /*!< \ingroup Module_info */
-MODULE_ALIAS("ipt_packsan"); /*!< \ingroup Module_info */
+MODULE_AUTHOR("PACKSAN TEAM <packsanteam@gmail.com"); /*!< \ingroup mt_info */
+MODULE_DESCRIPTION("Xtables: Packet sanitizer, clean your packets from bad strings!!!"); /*!< \ingroup mt_info */
+MODULE_LICENSE("GPL"); /*!< \ingroup mt_info */
+MODULE_ALIAS("ipt_packsan"); /*!< \ingroup mt_info */

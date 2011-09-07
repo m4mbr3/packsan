@@ -399,10 +399,10 @@ static void __exit packsan_tg_exit(void)
 module_init(packsan_tg_init); /*!< Linux macro to indicate which function to call at insertion. */
 module_exit(packsan_tg_exit); /*!< Linux macro to indicate which function to call at extraction. */
 
-/*! \defgroup Module_info
+/*! \defgroup tg_info Target informations
  * \brief Linux macros to register basic module information.
  */
-MODULE_AUTHOR ("PACKSAN TEAM:<packsanteam@gmail.com>"); /*!< \ingroup Module_info */
-MODULE_DESCRIPTION("Xtables: Packet Sanitizer, clean your packets from bad strings!!!"); /*!< \ingroup Module_info */
-MODULE_LICENSE("GPL"); /*!< \ingroup Module_info */
-MODULE_ALIAS("ipt_PACKSAN"); /*!< \ingroup Module_info */
+MODULE_AUTHOR ("PACKSAN TEAM:<packsanteam@gmail.com>"); /*!< \ingroup tg_info */
+MODULE_DESCRIPTION("Xtables: Packet Sanitizer, clean your packets from bad strings!!!"); /*!< \ingroup tg_info */
+MODULE_LICENSE("GPL"); /*!< \ingroup tg_info */
+MODULE_ALIAS("ipt_PACKSAN"); /*!< \ingroup tg_info */
