@@ -23,7 +23,7 @@ static void packsan_mt_check(unsigned int flags)
 static void packsan_mt4_print(const void *entry,
 			     const struct xt_entry_match *match, int numeric)
 {
-  printf("\n[!] No optiont to print...\n");
+  printf("\n[!] No option to print...\n");
 }
 
 
@@ -34,17 +34,17 @@ static void packsan_mt_help(void){
 }
 
 static struct xtables_match packsan_mt4_reg = {
-  .version = XTABLES_VERSION,
-  .name = "packsan",
-  .revision = 0,
-  .family = NFPROTO_IPV4,
-  .size = XT_ALIGN(0),
-  .userspacesize = XT_ALIGN(0),
-  .help = packsan_mt_help,
-  .parse = packsan_mt4_parse,
-  .final_check = packsan_mt_check,
-  .extra_opts = packsan_mt_opts,
-  .print = packsan_mt4_print,
+  .version 		= XTABLES_VERSION,
+  .name 		= "packsan",
+  .revision 	= 0,
+  .family 		= NFPROTO_IPV4,
+  .size 		= XT_ALIGN(0),
+  .userspacesize 	= XT_ALIGN(0),
+  .help 		= packsan_mt_help,
+  .parse 		= packsan_mt4_parse,
+  .final_check 	= packsan_mt_check,
+  .extra_opts 	= packsan_mt_opts,
+  .print 		= packsan_mt4_print,
 };
 
 void _init(void)
