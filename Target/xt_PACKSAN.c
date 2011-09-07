@@ -5,6 +5,10 @@
  */
 
 #include "../Matcher/xt_packsan.h"
+#ifndef X_TABLES_H_
+#define X_TABLES_H_
+#include <linux/netfilter/x_tables.h>
+#endif /* X_TABLES_H_ */
 
 #include <net/checksum.h>
 #include <net/tcp.h>

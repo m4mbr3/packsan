@@ -7,7 +7,10 @@
 #include <linux/netfilter_ipv4.h>
 // GENERIC LIBRARIES (for both match and target)
 #include <linux/netfilter.h>
+#ifndef X_TABLES_H_
+#define X_TABLES_H_
 #include <linux/netfilter/x_tables.h>
+#endif /* X_TABLES_H_ */
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/in.h>
