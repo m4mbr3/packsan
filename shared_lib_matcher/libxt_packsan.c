@@ -23,7 +23,7 @@ static const struct option packsan_mt_opts[] = {
  * \return 0 if some option is not correct, nonzero otherwise
  */
 static int packsan_mt4_parse(int c, char **argv, int invert, unsigned int *flags, const void *entry, struct xt_entry_match **match){
-  /* We have no extra-option then we no parse anything */
+  /* We have no extra-option then we don't parse anything */
   return true;
 }
 
@@ -33,7 +33,7 @@ static int packsan_mt4_parse(int c, char **argv, int invert, unsigned int *flags
  */
 static void packsan_mt_check(unsigned int flags)
 {
-  /*We have no extra-option then we no check anything*/
+  /*We have no extra-option then we don't check anything*/
 }
 
 

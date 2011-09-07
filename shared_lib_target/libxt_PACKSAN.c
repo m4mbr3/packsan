@@ -23,7 +23,7 @@ static const struct option packsan_tg_opts[]= {
  * \return 0 if some option is not correct, nonzero otherwise
  */
 static int packsan_tg4_parse(int c, char **argv, int invert, unsigned int *flags, const void *entry, struct xt_entry_match **match){
-  /* We have no extra-option then we no parse anything */
+  /* We have no extra-option then we don't parse anything */
   return true;
 }
 
@@ -33,7 +33,7 @@ static int packsan_tg4_parse(int c, char **argv, int invert, unsigned int *flags
  */
 static void packsan_tg_check(unsigned int flags)
 {
-    /* We have no extra-option then we no check anything*/
+    /* We have no extra-option then we don't check anything*/
 }
 
 /*! \fn void packsan_tg_print(const void *entry, const struct xt_entry_match *match, int numeric)
@@ -50,7 +50,7 @@ static void packsan_tg4_print(const void *entry,
  */
 static void packsan_tg_help(void){
   printf("\nPacksan match options:\n"
-    "\n[!] At the momente, No option avaiable \n"
+    "\n[!] At the moment, No option avaiable \n"
 	    );
 }
 

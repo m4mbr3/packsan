@@ -71,7 +71,7 @@ extern ps_match* KMP_Matcher(char*, int, const char*, int, unsigned int, int*); 
  * \return 0 if the insertion conditions are met, -EINVAL otherwise
  */
 
-static int packsan_mt_check (const struct  xt_mtchk_param *par)
+static int packsan_mt_check (const struct xt_mtchk_param *par)
 {
 	  pr_info("\n*************PACKSAN MATCHER*****************\n");
 	  pr_info("Added a rule with -m packsan in the %s table \n ",
