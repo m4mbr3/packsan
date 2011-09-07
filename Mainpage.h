@@ -21,6 +21,9 @@
  * 
  * iptables -A (INPUT|POSTROUTING) -t mangle -m packsan -j PACKSAN
  * 
+ * A VERY VERBOSE logging activity is by default enabled, and can be seen with dmesg; to disable it the LOG macro inside both modules must be set to 0.
+ * Default searched strings are "carne" and "gelato" (we were hungry at the time we wrote them ...).
+ *
  * Comments, critics and suggestions are well appreciated and can be sent to packsanteam@gmail.com
  * 
  * 
