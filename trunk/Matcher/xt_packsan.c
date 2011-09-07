@@ -238,11 +238,6 @@ static void __exit packsan_mt_exit(void)
 	xt_unregister_match(&packsan_mt4_reg);
 }
 
-
-module_init(packsan_mt_init);
-module_exit(packsan_mt_exit);
-
-
 module_init(packsan_mt_init); /*!< Linux macro to indicate which function to call at insertion. */
 
 module_exit(packsan_mt_exit); /*!< Linux macro to indicate which function to call at extraction. */
