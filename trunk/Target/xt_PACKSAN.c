@@ -1,54 +1,34 @@
-#ifndef XT_PACKSAN_H_
-#define XT_PACKSAN_H_
+/*! \file xt_PACKSAN.c
+ * \brief the tarhet module
+ * 
+ * This file contains the target module that finds the substrings inside the l4 payload and substitutes them.
+ */
+
 #include "../Matcher/xt_packsan.h"
-#endif /* XT_PACKSAN_H_ */
-
-//#include <linux/module.h>
-//#include <linux/kernel.h>
-//#include <linux/inet.h>
-//#include <linux/ip.h>
-//#include <linux/in.h>
-//#include <linux/tcp.h>
-//#include <linux/udp.h>
-//#include <linux/skbuff.h>
-//#include <linux/netfilter/xt_string.h>
-
-// GENERIC LIBRARIES (for both match and target)
-
-#ifndef NETFILTER_H_
-#define NETFILTER_H_
-#include <linux/netfilter.h>
-#endif /* NETFILTER_H_ */
-
-#ifndef X_TABLES_H_
-#define X_TABLES_H_
-#include <linux/netfilter/x_tables.h>
-#endif /* X_TABLES_H */
-
-#include <linux/module.h>
-#include <linux/kernel.h>
-#include <linux/in.h>
-#include <linux/ip.h>
-#include <net/ip.h>
-#include <linux/tcp.h>
-#include <linux/udp.h>
-#include <linux/skbuff.h>
-
 
 #include <net/checksum.h>
 #include <net/tcp.h>
 #include <asm/checksum.h>
 
-//distance of data offset field in tcp header
+/*! \def DOFF_DISTANCE
+ * Distance of data offset field in tcp header
+ */
 #ifndef DOFF_DISTANCE
 #define DOFF_DISTANCE 12
 #endif
-//udp header length
+
+/*! \def UDP_HDR_LEN
+ * UDP header length: it's constant.
+ */
 #ifndef UDP_HDR_LEN
 #define UDP_HDR_LEN 8
 #endif
 
-//do you want to have a VERBOSE log of the module activity? set it to non-zero
+/*! \def LOG
+ * \brief Set it to 1 to log the activity.
+ * 
+ * Do you want to have a VERBOSE log of the module activity? set it to non-zero.
+ */
 #ifndef LOG
 #define LOG 1
 #endif
@@ -61,16 +41,27 @@
 */
 
 
+/*! \defgroup Extern_Declarations External members, contained in xt_packsan.h and in common.
+ */
 struct ps_match_occurrence;
 //typedef struct ps_match_occurrence ps_match;
-extern const unsigned int strings_number;
-extern const char* strings[]; 
-extern const char* var_len_replacements[];
-extern const char* const_len_replacements[];
-extern void dealloc_all_list(ps_match*);
-extern ps_match* KMP_Matcher(char*, int, const char*, int, unsigned int, int*);
+extern const unsigned int strings_number; /*!< \ingroup Extern_Declarations Number of the strings to search for inside the packet */
+extern const char* strings[]; /*!< \ingroup Extern_Declarations Strings to search for inside the packet */
+extern const char* var_len_replacements[]; /*!< \ingroup Extern_Declarations Strings with different length from corresponding ones in strings: for UDP substitution */
+extern const char* const_len_replacements[]; /*!< \ingroup Extern_Declarations Strings with same length of corresponding ones in string: for TCP matches */
+extern void dealloc_all_list(ps_match*); /*!< \ingroup Extern_Declarations Function to deallocate the list of matches */
+extern ps_match* KMP_Matcher(char*, int, const char*, int, unsigned int, int*); /*!< \ingroup Extern_Declarations KMP matcher */
 
-const char* *replacements;
+const char* *replacements; /*!< Global variable to store the address of the strings to replace */
+
+/*! \fn varlen_replace(char* original, unsigned int original_len, char* new, ps_match* matches)
+ *  \brief replaces the strings into the packet payload with regards to the found matches.
+ * 
+ * \param original the original text
+ * \param original_len the length of the original text
+ * \param new the new area to write to
+ * \param matches the matches list
+ */
 
 void inline varlen_replace(char* original, unsigned int original_len, char* new, ps_match* matches) {
 	
@@ -105,6 +96,12 @@ void inline varlen_replace(char* original, unsigned int original_len, char* new,
 	
 }
 
+/*! \fn ps_match* insert_by_position(ps_match* head, ps_match* string_head)
+ * \brief inserts the matches of string_head into the list head ordering them by the position field
+ * \param head the head of the list to insert into
+ * \param string_head the head of the list of items to insert into head
+ * \return the head of the merged list
+ */
 
 static ps_match* insert_by_position(ps_match* head, ps_match* string_head) {
 	
@@ -136,6 +133,15 @@ static ps_match* insert_by_position(ps_match* head, ps_match* string_head) {
 	}
 	return head;
 }
+
+/*! \fn unsigned int packsan_tg4(struct sk_buff *skb, const struct xt_action_param *par)
+ * \brief target function with search and replacement
+ * 
+ * This function looks for all the substrings inside the l4 payload and replaces the matches with the corresponding ones.
+ * \param skb the received packet
+ * \param par a struct that has some additional information about the packet (I/O devices, fragments ... see docs)
+ * \return always true, because the packet must always be accepted
+ */
 
 static unsigned int packsan_tg4(struct sk_buff *skb, const struct xt_action_param *par)
 {
@@ -346,6 +352,10 @@ static unsigned int packsan_tg4(struct sk_buff *skb, const struct xt_action_para
 	return true;
 }
 
+   /*! \var struct xt_target packsan_tg4_reg
+ * \brief Contains the target info
+ */
+
 static struct xt_target packsan_tg_reg __read_mostly = {
 		.name 		= "PACKSAN",
 		.revision		= 0,
@@ -354,25 +364,40 @@ static struct xt_target packsan_tg_reg __read_mostly = {
 		.hooks		= ( 1 << NF_INET_LOCAL_IN )|( 1 << NF_INET_POST_ROUTING ),
 		.target		= packsan_tg4,
 		.targetsize 	= XT_ALIGN(0),
-		.me		= THIS_MODULE,
+		.me			= THIS_MODULE,
 	};		
 
-
-
+/*! \fn void __exit packsan_tg_init(void)
+ * \brief Function called at the module insertion to register the target.
+ * 
+ * It registers the target by calling a proper function of iptables and passing it packsan_tg_reg.
+ * 
+ * \return 0 if the extraction succeeds, non - 0 otherwise
+ */
 static int __init packsan_tg_init(void)
 {
 	return  xt_register_target(&packsan_tg_reg);
 }
+
+/*! \fn void __exit packsan_tg_exit(void)
+ * \brief Function called at the module extraction to unregister the target.
+ * 
+ * It unregisters the target by calling a proper function of iptables and passing it packsan_tg_reg.
+ * 
+ * \return 0 if the extraction succeeds, non - 0 otherwise
+ */
 static void __exit packsan_tg_exit(void)
 {
  	xt_unregister_target(&packsan_tg_reg);
 }
 
-module_init(packsan_tg_init);
-module_exit(packsan_tg_exit);
+module_init(packsan_tg_init); /*!< Linux macro to indicate which function to call at insertion. */
+module_exit(packsan_tg_exit); /*!< Linux macro to indicate which function to call at extraction. */
 
-MODULE_AUTHOR ("PACKSAN TEAM:<packsanteam@gmail.com>");
-MODULE_DESCRIPTION("Xtables: Packet Sanitizer, clean your packets from bad strings!!!");
-MODULE_LICENSE("GPL");
-MODULE_ALIAS("ipt_PACKSAN");
-
+/*! \defgroup Module_info
+ * \brief Linux macros to register basic module information.
+ */
+MODULE_AUTHOR ("PACKSAN TEAM:<packsanteam@gmail.com>"); /*!< \ingroup Module_info */
+MODULE_DESCRIPTION("Xtables: Packet Sanitizer, clean your packets from bad strings!!!"); /*!< \ingroup Module_info */
+MODULE_LICENSE("GPL"); /*!< \ingroup Module_info */
+MODULE_ALIAS("ipt_PACKSAN"); /*!< \ingroup Module_info */
