@@ -1,5 +1,5 @@
 /*! \file xt_PACKSAN.c
- * \brief the tarhet module
+ * \brief the target module
  * 
  * This file contains the target module that finds the substrings inside the l4 payload and substitutes them.
  */
