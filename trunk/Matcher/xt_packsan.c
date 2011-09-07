@@ -208,7 +208,7 @@ static struct xt_match packsan_mt4_reg __read_mostly = {
 		.match 		=	packsan_mt,
 		.checkentry		=	packsan_mt_check,
 		.destroy		=	packsan_mt_destroy,
-		.matchsize 		=	sizeof(struct xt_packsan_mtinfo),
+		.matchsize 		=	0,
 		.me			= 	THIS_MODULE,
 	};
 	
