@@ -1,7 +1,6 @@
 #include <xtables.h>
 #include <stdio.h>
 #include <stdbool.h>
-#include "xt_PACKSAN.h"
 
 static const struct option_packsan_tg opts[]= {
   {NULL},

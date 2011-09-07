@@ -1,65 +1,46 @@
-#ifndef XT_PACKSAN_H_
-#define XT_PACKSAN_H_
+/*! \file xt_packsan.c
+ * \brief The match for iptables.
+ * 
+ * This file contains the packsan match, with the matching function and 
+ * the data structures needed to load it through iptables.
+ * 
+ */
+
+
 #include "xt_packsan.h"
-#endif /* XT_PACKSAN_H_ */
-
-//#include <linux/module.h>
-//#include <linux/kernel.h>
-//#include <linux/netfilter.h>
-//#include <linux/inet.h>
-//#include <linux/ip.h>
-//#include <linux/in.h>
-//#include <linux/tcp.h>
-//#include <linux/udp.h>
-//#include <linux/skbuff.h>
-//#include <linux/netfilter/xt_string.h>
-//#include <net/checksum.h>
-//#include <net/tcp.h>
-//#include <asm/checksum.h>
-
-// GENERIC LIBRARIES (for both match and target)
-#ifndef NETFILTER_H_
-#define NETFILTER_H_
-#include <linux/netfilter.h>
-#endif /* NETFILTER_H_ */
-
-#ifndef X_TABLES_H_
-#define X_TABLES_H_
-#include <linux/netfilter/x_tables.h>
-#endif /* X_TABLES_H */
-
-#include <linux/module.h>
-#include <linux/kernel.h>
-#include <linux/in.h>
-#include <linux/ip.h>
-#include <net/ip.h>
-#include <linux/tcp.h>
-#include <linux/udp.h>
-#include <linux/skbuff.h>
 
 
-//distance of data offset field in tcp header
-#ifndef DOFF_DISTANCE
+
+
+/*! \def DOFF_DISTANCE
+ * Distance of data offset field in tcp header
+ */
 #define DOFF_DISTANCE 12
-#endif
-//udp header length
-#ifndef UDP_HDR_LEN
-#define UDP_HDR_LEN 8
-#endif
 
-//do you want to have a VERBOSE log of the module activity? set it to non-zero
+/*! \def UDP_HDR_LEN
+ * UDP header length: it's constant.
+ */
+#define UDP_HDR_LEN 8
+
+/*! \def LOG
+ * \brief Set it to 1 to log the activity.
+ * 
+ * Do you want to have a VERBOSE log of the module activity? set it to non-zero.
+ */
 #ifndef LOG
 #define LOG 1
 #endif
 
+/*! \defgroup Extern_Declarations External members, contained in xt_packsan.h and in common.
+ */
 struct ps_match_occurrence;
-typedef struct ps_match_occurrence ps_match;
-extern const unsigned int strings_number;
-extern const char* strings[];
-extern const char* var_len_replacements[];
-extern const char* const_len_replacements[];
-extern void dealloc_all_list(ps_match*);
-extern ps_match* KMP_Matcher(char*, int, const char*, int, unsigned int, int*);
+//typedef struct ps_match_occurrence ps_match;
+extern const unsigned int strings_number; /*!< \ingroup Extern_Declarations Number of the strings to search for inside the packet */
+extern const char* strings[]; /*!< \ingroup Extern_Declarations Strings to search for inside the packet */
+extern const char* var_len_replacements[]; /*!< \ingroup Extern_Declarations Strings with different length from corresponding ones in strings: for UDP substitution */
+extern const char* const_len_replacements[]; /*!< \ingroup Extern_Declarations Strings with same length of corresponding ones in string: for TCP matches */
+extern void dealloc_all_list(ps_match*); /*!< \ingroup Extern_Declarations Function to deallocate the list of matches */
+extern ps_match* KMP_Matcher(char*, int, const char*, int, unsigned int, int*); /*!< \ingroup Extern_Declarations KMP matcher */
 
 
 /* This Function is called when in a new rule there is "-m packsan" 
@@ -72,13 +53,27 @@ extern ps_match* KMP_Matcher(char*, int, const char*, int, unsigned int, int*);
    
    Our checkentry function check if the format of rule is `iptables -A (INPUT|POSTROUTING) -t mangle  -m packsan`
 */
+
+/*! \fn int packsan_mt_check (const struct  xt_mtchk_param *par)
+ * 
+ * \brief Function to check the insertion table and hook in iptables.
+ * 
+ * This function checks whether the module is being inserted into mangle table of INPUT or POSTROUTING hooks.
+ * This means that the command must start with
+ * 
+ * `iptables -A (INPUT|POSTROUTING) -t mangle  -m packsan`
+ * 
+ * \param par the parameters given to iptables
+ * \return 0 if the insertion conditions are met, -EINVAL otherwise
+ */
+
 static int packsan_mt_check (const struct  xt_mtchk_param *par)
 {
 	  pr_info("\n*************PACKSAN MATCHER*****************\n");
 	  pr_info("Added a rule with -m packsan in the %s table \n ",
 		par-> table);
 	  if (!(par->hook_mask & ( XT_PACKSAN_LOCAL_IN | XT_PACKSAN_POST_ROUTING ))) {
-		  pr_info("Noone hook selected!!! \n");
+		  pr_info("No hook selected!!! \n");
 		  return -EINVAL;
 	  }
 	  if( strcmp(par->table, "mangle") == -1){
@@ -90,6 +85,17 @@ static int packsan_mt_check (const struct  xt_mtchk_param *par)
 	  return 1;
 }
 
+
+/*! \fn void packsan_mt_destroy(const struct xt_mtdtor_param *par)
+ * 
+ * \brief Function called on module removal.
+ * 
+ * This function performs all the actions needed before the module removal.
+ * At the present time, it just notifies via the kernel log.
+ * 
+ * \param par structure that describes some details about the module invocation
+ */
+
 static void packsan_mt_destroy(const struct xt_mtdtor_param *par)
 {	
 	pr_info ("\n************PACKSAN MATCHER***************\n");
@@ -97,6 +103,15 @@ static void packsan_mt_destroy(const struct xt_mtdtor_param *par)
 	pr_info ("\n************Goodbye********************\n");
 }
 
+/*! \fn bool packsan_mt(const struct sk_buff *skb, struct xt_action_param *par)
+ * \brief The matching function.
+ * 
+ * This function looks for an occurence of a string of string array inside the packet: if one is found the packet is matched.
+ * 
+ * \param skb the struct sk_buff that stores the packet information and data
+ * \param par a struct that has some additional information about the packet (I/O devices, fragments ... see docs)
+ * \return true if the packet matches at least one string, false otherwise
+ */
 
 static bool packsan_mt(const struct sk_buff *skb, struct xt_action_param *par)
 {	
@@ -182,6 +197,10 @@ static bool packsan_mt(const struct sk_buff *skb, struct xt_action_param *par)
 
 }
 
+/*! \var struct xt_match packsan_mt4_reg
+ * \brief this struct contains all the information to register the module inside iptables.
+ */
+
 static struct xt_match packsan_mt4_reg __read_mostly = {
 		.name			=	"packsan",
 		.revision		=	0,
@@ -193,10 +212,26 @@ static struct xt_match packsan_mt4_reg __read_mostly = {
 		.me			= 	THIS_MODULE,
 	};
 	
+/*! \fn int  __init packsan_mt_init (void)
+ * \brief Function called at the module insertion to register the matcher.
+ * 
+ * It registers the matcher by calling a proper function of iptables and passing it packsan_mt4_reg.
+ * 
+ * \return 0 if the insertion succeeds, non - 0 otherwise
+ */	
+	
 static int  __init packsan_mt_init (void)
 {
 	return xt_register_match(&packsan_mt4_reg);
 }
+
+/*! \fn void __exit packsan_mt_exit(void)
+ * \brief Function called at the module extraction to unregister the matcher.
+ * 
+ * It unregisters the matcher by calling a proper function of iptables and passing it packsan_mt4_reg.
+ * 
+ * \return 0 if the extraction succeeds, non - 0 otherwise
+ */
 
 static void __exit packsan_mt_exit(void)
 {
@@ -208,8 +243,14 @@ module_init(packsan_mt_init);
 module_exit(packsan_mt_exit);
 
 
-MODULE_AUTHOR("PACKSAN TEAM <packsanteam@gmail.com");
-MODULE_DESCRIPTION("Xtables: Packet sanitizer, clean your packets from bad strings!!!");
-MODULE_LICENSE("GPL");
-MODULE_ALIAS("ipt_packsan");
+module_init(packsan_mt_init); /*!< Linux macro to indicate which function to call at insertion. */
 
+module_exit(packsan_mt_exit); /*!< Linux macro to indicate which function to call at extraction. */
+
+/*! \defgroup Module_info
+ * \brief Linux macros to register basic module information.
+ */
+MODULE_AUTHOR("PACKSAN TEAM <packsanteam@gmail.com"); /*!< \ingroup Module_info */
+MODULE_DESCRIPTION("Xtables: Packet sanitizer, clean your packets from bad strings!!!"); /*!< \ingroup Module_info */
+MODULE_LICENSE("GPL"); /*!< \ingroup Module_info */
+MODULE_ALIAS("ipt_packsan"); /*!< \ingroup Module_info */
