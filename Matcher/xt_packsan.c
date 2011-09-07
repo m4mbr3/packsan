@@ -43,8 +43,8 @@ extern const unsigned int strings_number; /*!< \ingroup Extern_Declarations Numb
 extern const char* strings[]; /*!< \ingroup Extern_Declarations Strings to search for inside the packet */
 extern const char* var_len_replacements[]; /*!< \ingroup Extern_Declarations Strings with different length from corresponding ones in strings: for UDP substitution */
 extern const char* const_len_replacements[]; /*!< \ingroup Extern_Declarations Strings with same length of corresponding ones in string: for TCP matches */
-extern void dealloc_all_list(ps_match*); /*!< \ingroup Extern_Declarations Function to deallocate the list of matches */
-extern ps_match* KMP_Matcher(char*, int, const char*, int, unsigned int, int*); /*!< \ingroup Extern_Declarations KMP matcher */
+extern void dealloc_all_list(ps_match* head); /*!< \ingroup Extern_Declarations Function to deallocate the list of matches */
+extern ps_match* KMP_Matcher(char* T, int T_length, const char* P, int P_length, unsigned int string_index, int* matches); /*!< \ingroup Extern_Declarations KMP matcher */
 
 
 /* This Function is called when in a new rule there is "-m packsan" 
