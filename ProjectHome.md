@@ -1,0 +1,1 @@
+packet sanitizer for linux kernel consisting of a kernel module that looks for user defined strings and replaces them with specified ones
